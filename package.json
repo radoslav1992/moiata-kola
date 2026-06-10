@@ -1,0 +1,27 @@
+{
+  "name": "moiata-kola",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Моята кола — проверка на винетка, глоби, ГТП и Гражданска отговорност на едно място",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.7.0",
+    "@astrojs/node": "^10.1.4",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource/oswald": "^5.2.8",
+    "@tailwindcss/postcss": "^4.3.0",
+    "astro": "^6.4.6",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^6.0.3"
+  }
+}

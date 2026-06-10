@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource/oswald/500.css";
+@import "@fontsource/oswald/600.css";
+
+@theme {
+  /* Платно и повърхности — хладно почти-бяло, бели карти, меки линии */
+  --color-canvas: #f7f9fb;
+  --color-card: #ffffff;
+  --color-line: #e3e9f1;
+  --color-line-strong: #cdd7e4;
+
+  /* Текст */
+  --color-ink: #101a28;
+  --color-ink-soft: #4a5a70;
+  --color-ink-faint: #7b8a9e;
+
+  /* Единственият акцент — синьото от регистрационната табела */
+  --color-accent: #003d99;
+  --color-accent-strong: #002d73;
+  --color-accent-soft: #e9effa;
+
+  /* Статусни цветове — пазят се само за резултати от проверки */
+  --color-ok: #15803d;
+  --color-ok-soft: #e8f6ed;
+  --color-warn: #b45309;
+  --color-warn-soft: #fdf3e1;
+  --color-bad: #c42121;
+  --color-bad-soft: #fcebea;
+
+  --font-sans: "Inter Variable", "Inter", system-ui, "Segoe UI", sans-serif;
+  /* Кондензираният шрифт живее само в табелата и в големите статусни числа */
+  --font-plate: "Oswald", "Arial Narrow", "Roboto Condensed", sans-serif;
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+  }
+  ::selection {
+    @apply bg-accent-soft text-accent-strong;
+  }
+  h1, h2, h3, h4 {
+    @apply font-semibold tracking-tight text-balance;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-card;
+  }
+  .btn-primary,
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent-strong;
+  }
+  .btn-secondary {
+    @apply border border-line-strong bg-card text-accent hover:border-accent hover:bg-accent-soft;
+  }
+  .prose-app {
+    @apply text-[1.0125rem] leading-relaxed text-ink-soft;
+  }
+  .prose-app h2 {
+    @apply mt-10 mb-4 text-2xl text-ink;
+  }
+  .prose-app h3 {
+    @apply mt-8 mb-3 text-xl text-ink;
+  }
+  .prose-app p {
+    @apply my-4;
+  }
+  .prose-app a {
+    @apply font-medium text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent;
+  }
+  .prose-app ul {
+    @apply my-4 list-disc space-y-2 pl-6;
+  }
+  .prose-app ol {
+    @apply my-4 list-decimal space-y-2 pl-6;
+  }
+  .prose-app strong {
+    @apply font-semibold text-ink;
+  }
+  .prose-app table {
+    @apply my-6 w-full border-collapse text-left text-base;
+  }
+  .prose-app th {
+    @apply border-b border-line-strong py-2.5 pr-4 font-semibold text-ink;
+  }
+  .prose-app td {
+    @apply border-b border-line py-2.5 pr-4;
+  }
+  .prose-app blockquote {
+    @apply my-6 rounded-xl border border-line bg-accent-soft/50 px-5 py-4 text-ink;
+  }
+}

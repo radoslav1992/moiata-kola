@@ -1,0 +1,78 @@
+---
+/**
+ * Общ шаблон за страниците на отделните видове винетки —
+ * уникално съдържание идва през props и slot, цените от единния източник.
+ */
+import Base from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import PriceTable from "@/components/PriceTable.astro";
+import Faq, { type FaqItem } from "@/components/Faq.astro";
+import { priceBySlug, fmtEur, fmtBgn } from "@/data/vignette-prices";
+import { SITE } from "@/lib/site";
+
+interface Props {
+  /** slug в данните за цени */
+  priceSlug: string;
+  /** slug в URL (може да се различава, напр. mesechna покрива и тримесечна) */
+  urlSlug: string;
+  title: string;
+  description: string;
+  h1: string;
+  faqItems: FaqItem[];
+}
+
+const { priceSlug, urlSlug, title, description, h1, faqItems } = Astro.props;
+const price = priceBySlug(priceSlug);
+
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: `${price.fullName} за лек автомобил`,
+  description,
+  offers: {
+    "@type": "Offer",
+    price: price.priceEur.toFixed(2),
+    priceCurrency: "EUR",
+    availability: "https://schema.org/InStock",
+    url: `${SITE.url}/vinetka/ceni/${urlSlug}`,
+  },
+};
+---
+
+<Base {title} {description} schema={[productSchema]}>
+  <Breadcrumbs
+    crumbs={[
+      { href: "/vinetka/ceni", label: "Цени на винетки" },
+      { href: `/vinetka/ceni/${urlSlug}`, label: price.fullName },
+    ]}
+  />
+
+  <section class="mx-auto max-w-3xl px-4 pt-6 sm:px-6">
+    <h1 class="text-center text-3xl sm:text-4xl">{h1}</h1>
+
+    <div class="card mx-auto mt-7 flex max-w-md flex-col items-center gap-1 p-7 text-center">
+      <p class="text-sm font-medium text-ink-soft">{price.fullName} — лек автомобил</p>
+      <p class="font-plate text-5xl font-semibold text-accent sm:text-6xl">{fmtEur(price.priceEur)}</p>
+      <p class="text-ink-soft">{fmtBgn(price.priceBgn)}</p>
+      <p class="mt-2 text-sm text-ink-faint">Валидност: {price.validity}</p>
+      <a href="/vinetka/kupi" class="btn-primary mt-4 w-full">Купи онлайн</a>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <div class="prose-app">
+      <slot />
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 pb-10 sm:px-6">
+    <h2 class="text-2xl">Сравнение с другите видове</h2>
+    <div class="mt-5">
+      <PriceTable highlight={priceSlug} compact />
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 pb-10 sm:px-6">
+    <Faq items={faqItems} />
+  </section>
+</Base>

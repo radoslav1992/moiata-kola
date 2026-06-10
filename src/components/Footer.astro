@@ -1,0 +1,77 @@
+---
+import { SITE, OFFICIAL_SOURCES } from "@/lib/site";
+
+const year = new Date().getFullYear();
+
+const columns = [
+  {
+    title: "Проверки",
+    links: [
+      { href: "/vinetka/proverka", label: "Проверка на винетка" },
+      { href: "/grazhdanska-otgovornost/proverka", label: "Гражданска отговорност" },
+      { href: "/gtp/proverka", label: "ГТП валидност" },
+      { href: "/globi/proverka", label: "Глоби от КАТ" },
+    ],
+  },
+  {
+    title: "Винетки",
+    links: [
+      { href: "/vinetka/ceni", label: "Цени на винетки" },
+      { href: "/vinetka/ceni/godishna", label: "Годишна винетка" },
+      { href: "/vinetka/ceni/uikend", label: "Уикенд винетка" },
+      { href: "/vinetka/za-invalidi", label: "Винетка за инвалиди" },
+      { href: "/vinetka/kupi", label: "Купи винетка онлайн" },
+    ],
+  },
+  {
+    title: "Сайт",
+    links: [
+      { href: "/statii", label: "Статии и ръководства" },
+      { href: "/gtp/cena", label: "ГТП цена" },
+      { href: "/za-proekta", label: "За проекта" },
+      { href: "/kontakti", label: "Контакти" },
+      { href: "/poveritelnost", label: "Поверителност" },
+    ],
+  },
+];
+---
+
+<footer class="mt-16 border-t border-line bg-card">
+  <div class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="max-w-xs">
+        <p class="text-base font-semibold">{SITE.name}</p>
+        <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+          Всички проверки за колата ви на едно място — бързо, безплатно и без регистрация.
+        </p>
+      </div>
+      {
+        columns.map((col) => (
+          <nav aria-label={col.title}>
+            <p class="text-sm font-semibold text-ink">{col.title}</p>
+            <ul class="mt-3 space-y-2">
+              {col.links.map((link) => (
+                <li>
+                  <a href={link.href} class="text-sm text-ink-soft transition-colors hover:text-accent">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <div class="mt-10 border-t border-line pt-6">
+      <p class="text-xs leading-relaxed text-ink-faint">
+        {SITE.name} е неофициален инструмент. Данните идват от официалните системи на
+        <a href={OFFICIAL_SOURCES.bgtoll.checkUrl} rel="nofollow noopener" class="underline decoration-line-strong underline-offset-2 hover:text-ink-soft">БГ ТОЛ</a>,
+        <a href={OFFICIAL_SOURCES.guaranteeFund.checkUrl} rel="nofollow noopener" class="underline decoration-line-strong underline-offset-2 hover:text-ink-soft">Гаранционен фонд</a> и
+        <a href={OFFICIAL_SOURCES.rta.checkUrl} rel="nofollow noopener" class="underline decoration-line-strong underline-offset-2 hover:text-ink-soft">ИААА</a>.
+        Сайтът не съхранява регистрационни номера, свързани с лични данни. При разминаване меродавни са официалните регистри.
+      </p>
+      <p class="mt-3 text-xs text-ink-faint">© {year} {SITE.name}. Прави се от шофьор за шофьори.</p>
+    </div>
+  </div>
+</footer>

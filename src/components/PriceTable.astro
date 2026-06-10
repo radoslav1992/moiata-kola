@@ -1,0 +1,50 @@
+---
+import { VIGNETTE_PRICES, PRICES_UPDATED, PRICES_UPDATED_HUMAN, fmtEur, fmtBgn } from "@/data/vignette-prices";
+
+interface Props {
+  /** Подчертава ред (slug), напр. на подстраниците за конкретен вид */
+  highlight?: string;
+  compact?: boolean;
+}
+
+const { highlight, compact = false } = Astro.props;
+---
+
+<div class="card overflow-hidden">
+  <table class="w-full text-left text-sm sm:text-base">
+    <caption class="sr-only">Цени на винетки за леки автомобили до 3,5 тона</caption>
+    <thead>
+      <tr class="border-b border-line bg-canvas/60 text-xs text-ink-faint uppercase tracking-wide">
+        <th scope="col" class="px-4 py-3 font-medium sm:px-5">Винетка</th>
+        <th scope="col" class="px-4 py-3 text-right font-medium sm:px-5">Цена (EUR)</th>
+        <th scope="col" class="px-4 py-3 text-right font-medium sm:px-5">Цена (BGN)</th>
+        {!compact && <th scope="col" class="hidden px-4 py-3 font-medium sm:px-5 md:table-cell">Валидност</th>}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        VIGNETTE_PRICES.map((p) => (
+          <tr
+            class:list={[
+              "border-b border-line last:border-0",
+              p.slug === highlight && "bg-accent-soft/50",
+            ]}
+          >
+            <td class="px-4 py-3.5 font-medium text-ink sm:px-5">
+              <a href={`/vinetka/ceni/${p.slug === "trimesechna" ? "mesechna" : p.slug}`} class="hover:text-accent">
+                {p.name}
+              </a>
+            </td>
+            <td class="px-4 py-3.5 text-right font-semibold text-ink sm:px-5">{fmtEur(p.priceEur)}</td>
+            <td class="px-4 py-3.5 text-right text-ink-soft sm:px-5">{fmtBgn(p.priceBgn)}</td>
+            {!compact && <td class="hidden px-4 py-3.5 text-ink-soft sm:px-5 md:table-cell">{p.validity}</td>}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+<p class="mt-3 text-xs text-ink-faint">
+  Официални цени на БГ ТОЛ за леки автомобили до 3,5 т. Последна проверка на данните:
+  <time datetime={PRICES_UPDATED}>{PRICES_UPDATED_HUMAN}</time>
+</p>

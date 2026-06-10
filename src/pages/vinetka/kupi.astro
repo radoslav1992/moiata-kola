@@ -1,0 +1,117 @@
+---
+import Base from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import PriceTable from "@/components/PriceTable.astro";
+import Faq from "@/components/Faq.astro";
+import { OFFICIAL_SOURCES } from "@/lib/site";
+
+const title = "Купи винетка онлайн — всички начини и цени | Моята кола";
+const description =
+  "Купуване на електронна винетка онлайн за 2 минути: официалният сайт на БГ ТОЛ, приложения и каси. Цени в евро и лева, от кога важи винетката и как да проверите, че е активна.";
+
+/* Местата за покупка. Когато се договорят партньорства (Boleron, Avtovia и др.),
+   тук се добавят партньорските линкове с rel="sponsored". */
+const channels = [
+  {
+    name: "bgtoll.bg — официалният сайт",
+    url: OFFICIAL_SOURCES.bgtoll.buyUrl,
+    rel: "nofollow noopener",
+    desc: "Картово плащане, винетката е активна веднага. Без надценка.",
+    badge: "Официален",
+  },
+  {
+    name: "Мобилни приложения (BGTOLL и партньорски)",
+    url: OFFICIAL_SOURCES.bgtoll.buyUrl,
+    rel: "nofollow noopener",
+    desc: "Удобни за покупка в движение и пазят историята на винетките ви.",
+    badge: "Телефон",
+  },
+  {
+    name: "Бензиностанции и каси",
+    url: null,
+    rel: null,
+    desc: "Срещу регистрационен номер на касата. Пазете касовата бележка — тя е доказателството при сгрешен номер.",
+    badge: "На място",
+  },
+];
+
+const faqItems = [
+  {
+    q: "Откога важи винетката, купена онлайн?",
+    a: "От началната дата и час, които изберете — може и от минутата на покупката. Няма стикер и нищо за лепене: камерите разпознават регистрационния номер.",
+  },
+  {
+    q: "Какво ми трябва, за да купя електронна винетка?",
+    a: "Само регистрационният номер, държавата на регистрация и карта за плащане. Отнема под 2 минути.",
+  },
+  {
+    q: "Как да съм сигурен, че винетката е активна?",
+    a: "Веднага след покупката направете <a href='/vinetka/proverka'>проверка по номер</a>. Ако не се показва, вижте ръководството „<a href='/statii/kupih-vinetka-no-ne-se-pokazva'>Купих винетка, но проверката не я показва</a>“.",
+  },
+  {
+    q: "Сгреших номера при покупката. Какво да правя?",
+    a: "Имате 2 часа да коригирате сгрешен номер през сайта на БГ ТОЛ без такса (при до 3 сгрешени символа). След този срок се подава искане към НТУ — реагирайте веднага.",
+  },
+  {
+    q: "По-скъпо ли е онлайн, отколкото на каса?",
+    a: "Не — цената на винетката е фиксирана навсякъде. Разликата е само в удобството.",
+  },
+];
+---
+
+<Base {title} {description}>
+  <Breadcrumbs
+    crumbs={[
+      { href: "/vinetka/ceni", label: "Винетки" },
+      { href: "/vinetka/kupi", label: "Купи винетка онлайн" },
+    ]}
+  />
+
+  <section class="mx-auto max-w-3xl px-4 pt-6 sm:px-6">
+    <h1 class="text-center text-3xl sm:text-4xl">Купи винетка онлайн</h1>
+    <p class="mx-auto mt-3 max-w-2xl text-center text-ink-soft sm:text-lg">
+      Електронната винетка се купува за 2 минути и важи от минутата, която изберете. Ето всички начини.
+    </p>
+
+    <div class="mt-8 space-y-4">
+      {
+        channels.map((c) => (
+          <div class="card flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div>
+              <p class="flex items-center gap-2 font-semibold text-ink">
+                {c.name}
+                <span class="rounded-full bg-accent-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-accent-strong uppercase">{c.badge}</span>
+              </p>
+              <p class="mt-1 text-sm leading-relaxed text-ink-soft">{c.desc}</p>
+            </div>
+            {c.url && (
+              <a href={c.url} rel={c.rel} target="_blank" class="btn-primary shrink-0">
+                Купи оттук ↗
+              </a>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 pt-12 sm:px-6">
+    <h2 class="text-2xl">Актуални цени</h2>
+    <div class="mt-5"><PriceTable compact /></div>
+    <p class="prose-app mt-4">
+      Не сте сигурни кой вид ви трябва? Сметнете с <a href="/vinetka/ceni#kalkulator" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">калкулатора за най-изгодна винетка</a>.
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 pt-10 sm:px-6">
+    <div class="card border-l-4 border-l-accent p-5 text-sm leading-relaxed text-ink-soft">
+      <strong class="text-ink">Златното правило:</strong> веднага след покупката направете
+      <a href="/vinetka/proverka" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">проверка на винетката по номер</a>.
+      Една буква разлика в номера значи компенсаторна такса при първата камера.
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <Faq items={faqItems} />
+  </section>
+</Base>

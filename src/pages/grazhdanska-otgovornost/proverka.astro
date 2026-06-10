@@ -1,0 +1,105 @@
+---
+import Base from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import PlateCheck from "@/components/PlateCheck.astro";
+import Faq from "@/components/Faq.astro";
+import { SITE, OFFICIAL_SOURCES, toolTitle } from "@/lib/site";
+
+const title = toolTitle("Проверка на Гражданска отговорност");
+const description =
+  "Проверка на Гражданска отговорност по номер на автомобила: има ли валидна полица, при кой застраховател и докога важи. Справка в Гаранционен фонд — безплатно и без регистрация.";
+
+const faqItems = [
+  {
+    q: "Как да проверя дали колата има валидна Гражданска отговорност?",
+    a: "Справката се прави по регистрационен номер в Информационния център на Гаранционен фонд. Въведете номера по-горе — ще ви насочим директно към официалната проверка с точните стъпки.",
+  },
+  {
+    q: "Какво показва справката в Гаранционен фонд?",
+    a: "Дали за автомобила има действаща задължителна застраховка „Гражданска отговорност“, при кой застраховател е сключена и началната/крайната дата на покритието.",
+  },
+  {
+    q: "Каква е глобата за шофиране без Гражданска отговорност?",
+    a: "Глобата за управление на МПС без валидна ГО е 250 лв. (127,82 €) за първо нарушение, а колата може да бъде спряна от движение. При щета без застраховка плащате всичко от джоба си — затова проверявайте преди всяко изтичане.",
+  },
+  {
+    q: "Мога ли да проверя ГО на чужда кола?",
+    a: "Да — справката е публична и изисква само регистрационен номер. Това е задължителна стъпка при покупка на автомобил втора ръка.",
+  },
+  {
+    q: "ГО изтича скоро — какво да направя?",
+    a: "Сравнете цените при няколко застрахователя, преди да подновите — разликите за една и съща кола стигат 30–40%. Полицата може да се сключи изцяло онлайн.",
+  },
+];
+
+const appSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Проверка на Гражданска отговорност по номер",
+  url: `${SITE.url}/grazhdanska-otgovornost/proverka`,
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  inLanguage: "bg",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+  description,
+};
+---
+
+<Base {title} {description} schema={[appSchema]}>
+  <Breadcrumbs crumbs={[{ href: "/grazhdanska-otgovornost/proverka", label: "Проверка на Гражданска отговорност" }]} />
+
+  <section class="mx-auto max-w-5xl px-4 pt-6 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <h1 class="text-3xl sm:text-4xl">Проверка на Гражданска отговорност</h1>
+      <p class="mt-3 text-ink-soft sm:text-lg">
+        Има ли колата валидна задължителна застраховка — справка по регистрационен номер в Гаранционен фонд.
+      </p>
+    </div>
+    <div class="mx-auto mt-7 max-w-2xl">
+      <PlateCheck checks={["insurance"]} buttonLabel="Провери ГО" />
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <div class="prose-app">
+      <h2>Как работи официалната справка</h2>
+      <p>
+        Регистърът на всички действащи полици „Гражданска отговорност“ се поддържа от
+        <a href={OFFICIAL_SOURCES.guaranteeFund.checkUrl} rel="nofollow noopener">Гаранционен фонд</a>.
+        Проверката е публична и безплатна:
+      </p>
+      <ol>
+        <li>Отворете официалната справка от бутона по-горе;</li>
+        <li>Въведете регистрационния номер и датата, за която проверявате;</li>
+        <li>Препишете кода за сигурност и потвърдете — резултатът е веднага.</li>
+      </ol>
+      <p>
+        Виждате застрахователя и точния период на покритие. Ако полицата е на вноски и вноска не е платена
+        в срок, покритието се прекратява — затова датата в справката е важна.
+      </p>
+
+      <h2>Защо проверката е важна</h2>
+      <ul>
+        <li><strong>Преди покупка на кола</strong> — без валидна ГО не можете да я карате до дома;</li>
+        <li><strong>При полица на вноски</strong> — пропусната вноска прекратява покритието тихо;</li>
+        <li><strong>След инцидент с друг автомобил</strong> — проверете дали виновният има валидна ГО.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 pb-4 sm:px-6">
+    <Faq items={faqItems} />
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6" id="oferti">
+    <div class="card flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <div>
+        <h2 class="text-xl">ГО изтича или липсва?</h2>
+        <p class="mt-1 text-sm text-ink-soft">
+          Сравнете офертите на всички застрахователи — разликите стигат 30–40% за същото покритие.
+        </p>
+      </div>
+      <a href="/statii" class="btn-primary shrink-0">Как да избера ГО</a>
+    </div>
+  </section>
+</Base>

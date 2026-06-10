@@ -1,0 +1,100 @@
+---
+import Base from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import PlateCheck from "@/components/PlateCheck.astro";
+import Faq from "@/components/Faq.astro";
+import { SITE, OFFICIAL_SOURCES, toolTitle } from "@/lib/site";
+
+const title = toolTitle("ГТП проверка — валидност на технически преглед");
+const description =
+  "ГТП проверка по регистрационен номер: кога е минат последният годишен технически преглед и до коя дата е валиден. Справка в системата на ИААА — безплатно, без регистрация.";
+
+const faqItems = [
+  {
+    q: "Как да проверя докога е валиден ГТП на колата?",
+    a: "Справката се прави по регистрационен номер в системата на ИА „Автомобилна администрация“ (ИААА). Въведете номера по-горе — ще ви насочим към официалната проверка с точните стъпки.",
+  },
+  {
+    q: "Колко често се минава годишен технически преглед?",
+    a: "Леките автомобили минават първи преглед 3 години след първата регистрация, втори — след още 2 години, а след това всяка година.",
+  },
+  {
+    q: "Каква е глобата за изтекъл ГТП?",
+    a: "Глобата за управление на автомобил без валиден технически преглед е 50 лв. (25,56 €) с фиш, а при проверка колата може да бъде спряна от движение до преминаване на преглед. Застрахователи може да откажат и плащане по каско при ПТП с изтекъл ГТП.",
+  },
+  {
+    q: "Какви документи трябват за ГТП?",
+    a: "Свидетелство за регистрация на МПС (голям и малък талон или само малък), валидна Гражданска отговорност и платен данък МПС. Цените и пунктовете вижте на страницата „ГТП цена“.",
+  },
+  {
+    q: "Може ли да мина ГТП по-рано от крайната дата?",
+    a: "Да, по всяко време. Новият срок тече от датата на новия преглед, така че няма да „загубите“ дни, само ако минете прегледа в същия месец.",
+  },
+];
+
+const appSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "ГТП проверка по регистрационен номер",
+  url: `${SITE.url}/gtp/proverka`,
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  inLanguage: "bg",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+  description,
+};
+---
+
+<Base {title} {description} schema={[appSchema]}>
+  <Breadcrumbs crumbs={[{ href: "/gtp/proverka", label: "ГТП проверка" }]} />
+
+  <section class="mx-auto max-w-5xl px-4 pt-6 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <h1 class="text-3xl sm:text-4xl">ГТП проверка по номер</h1>
+      <p class="mt-3 text-ink-soft sm:text-lg">
+        Кога е минат последният годишен технически преглед и докога е валиден.
+      </p>
+    </div>
+    <div class="mx-auto mt-7 max-w-2xl">
+      <PlateCheck checks={["inspection"]} buttonLabel="Провери ГТП" />
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <div class="prose-app">
+      <h2>Какво е ГТП и защо срокът е важен</h2>
+      <p>
+        Годишният технически преглед (ГТП) удостоверява, че автомобилът е технически изправен и може да се
+        движи по пътищата. Регистърът на прегледите се води от
+        <a href={OFFICIAL_SOURCES.rta.checkUrl} rel="nofollow noopener">ИА „Автомобилна администрация“</a>.
+        С изтекъл преглед рискувате глоба, спиране от движение и проблеми със застраховките.
+      </p>
+
+      <h2>Кога е следващият ви преглед</h2>
+      <ul>
+        <li><strong>Нов автомобил:</strong> първи преглед 3 години след първата регистрация;</li>
+        <li><strong>След първия:</strong> втори преглед след още 2 години;</li>
+        <li><strong>След това:</strong> всяка година, до същата дата.</li>
+      </ul>
+      <p>
+        Точната дата на изтичане е записана на знака в долния десен ъгъл на предното стъкло и в официалната
+        справка. Цените на прегледа по градове вижте на страницата
+        <a href="/gtp/cena">ГТП цена</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 pb-4 sm:px-6">
+    <Faq items={faqItems} />
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <div class="card flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <div>
+        <h2 class="text-xl">ГТП изтича скоро?</h2>
+        <p class="mt-1 text-sm text-ink-soft">Вижте колко струва прегледът и какви документи са нужни.</p>
+      </div>
+      <a href="/gtp/cena" class="btn-primary shrink-0">ГТП цени и документи</a>
+    </div>
+  </section>
+</Base>

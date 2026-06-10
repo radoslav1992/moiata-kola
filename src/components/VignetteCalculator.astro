@@ -1,0 +1,99 @@
+---
+/**
+ * Мини-калкулатор: „Колко често карате по републикански пътища?“
+ * → най-изгодният вид винетка за това ползване. Работи изцяло в браузъра.
+ */
+import { VIGNETTE_PRICES } from "@/data/vignette-prices";
+---
+
+<section class="card p-5 sm:p-8" id="kalkulator" data-vignette-calc data-prices={JSON.stringify(VIGNETTE_PRICES)}>
+  <h2 class="text-xl sm:text-2xl">Коя винетка ви излиза най-евтино?</h2>
+  <p class="mt-2 text-sm text-ink-soft">
+    Изберете колко често карате по републикански пътища — сметката е за 12 месеца напред.
+  </p>
+
+  <div class="mt-5 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Колко често пътувате">
+    {
+      [
+        { id: "rare", label: "Няколко пъти в годината", hint: "2–4 уикенд пътувания" },
+        { id: "monthly", label: "Около веднъж месечно", hint: "≈ 12 уикенд пътувания" },
+        { id: "season", label: "Редовно през един сезон", hint: "напр. лятото на село" },
+        { id: "daily", label: "Постоянно / ежедневно", hint: "магистрала до работа" },
+      ].map((opt, i) => (
+        <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-card px-4 py-3.5 transition-colors has-checked:border-accent has-checked:bg-accent-soft/60">
+          <input type="radio" name="usage" value={opt.id} checked={i === 0} class="mt-1 accent-accent" />
+          <span>
+            <span class="block text-sm font-medium text-ink">{opt.label}</span>
+            <span class="block text-xs text-ink-faint">{opt.hint}</span>
+          </span>
+        </label>
+      ))
+    }
+  </div>
+
+  <div class="mt-5 rounded-xl border border-line bg-canvas/60 p-5" data-calc-result aria-live="polite"></div>
+</section>
+
+<script>
+  interface Price {
+    slug: string;
+    fullName: string;
+    priceEur: number;
+    priceBgn: number;
+  }
+
+  const fmtEur = (v: number) =>
+    v.toLocaleString("bg-BG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-vignette-calc]")) {
+    const prices: Price[] = JSON.parse(root.dataset.prices ?? "[]");
+    const bySlug = Object.fromEntries(prices.map((p) => [p.slug, p]));
+    const result = root.querySelector<HTMLElement>("[data-calc-result]")!;
+
+    // Годишен разход по сценарий: брой покупки × цена на съответния вид
+    const SCENARIOS: Record<string, { best: string; alt: string; bestCount: number; altCount: number; note: string }> = {
+      rare: {
+        best: "uikend", bestCount: 4, alt: "godishna", altCount: 1,
+        note: "При до 9 пътувания годишно отделните уикенд винетки са по-евтини от годишната.",
+      },
+      monthly: {
+        best: "godishna", bestCount: 1, alt: "uikend", altCount: 12,
+        note: "12 уикенд винетки вече излизат повече от една годишна — взимате годишна и не мислите.",
+      },
+      season: {
+        best: "trimesechna", bestCount: 1, alt: "mesechna", altCount: 3,
+        note: "Тримесечната покрива цял сезон по-евтино от три месечни.",
+      },
+      daily: {
+        best: "godishna", bestCount: 1, alt: "trimesechna", altCount: 4,
+        note: "При ежедневно каране годишната е без конкуренция.",
+      },
+    };
+
+    function render(usage: string) {
+      const s = SCENARIOS[usage];
+      if (!s) return;
+      const best = bySlug[s.best];
+      const alt = bySlug[s.alt];
+      if (!best || !alt) return;
+      const bestTotal = best.priceEur * s.bestCount;
+      const altTotal = alt.priceEur * s.altCount;
+      const saving = Math.max(0, altTotal - bestTotal);
+
+      result.innerHTML = `
+        <p class="text-sm font-medium text-ink-soft">Най-изгодно за вас</p>
+        <p class="mt-1 text-2xl font-semibold text-ink">${best.fullName}
+          <span class="font-plate text-accent">${fmtEur(best.priceEur)}</span>
+          ${s.bestCount > 1 ? `<span class="text-sm font-normal text-ink-soft">× ${s.bestCount} = ${fmtEur(bestTotal)}/год.</span>` : ""}
+        </p>
+        <p class="mt-2 text-sm leading-relaxed text-ink-soft">${s.note}${saving > 0.5 ? ` Спестявате около <strong>${fmtEur(saving)}</strong> на година спрямо алтернативата.` : ""}</p>
+        <a href="/vinetka/kupi" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Купи ${best.fullName.toLowerCase()} онлайн →</a>`;
+    }
+
+    root.addEventListener("change", (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.name === "usage") render(t.value);
+    });
+    render("rare");
+  }
+</script>

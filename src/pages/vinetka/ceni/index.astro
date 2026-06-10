@@ -1,0 +1,85 @@
+---
+import Base from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import PriceTable from "@/components/PriceTable.astro";
+import VignetteCalculator from "@/components/VignetteCalculator.astro";
+import Faq from "@/components/Faq.astro";
+import { PRICES_UPDATED_HUMAN } from "@/data/vignette-prices";
+
+const title = "Винетка цени 2026 — пълна таблица в евро и лева | Моята кола";
+const description =
+  "Актуални цени на винетките за 2026 г. в евро и лева: годишна 49,60 € (97 лв.), месечна 15,34 €, седмична 7,67 €, уикенд 5,11 €. Калкулатор кой вид винетка е най-изгоден за вас.";
+
+const faqItems = [
+  {
+    q: "Колко струва годишната винетка за лек автомобил?",
+    a: "Годишната винетка струва 49,60 € (97 лв.) и важи 12 месеца от избраната от вас начална дата — не от 1 януари.",
+  },
+  {
+    q: "Промениха ли се цените на винетките след въвеждането на еврото?",
+    a: "Цените са същите по стойност — превалутирани по официалния курс 1,95583 лв. за евро. Годишната от 97 лв. стана 49,60 €, месечната от 30 лв. — 15,34 €, и т.н.",
+  },
+  {
+    q: "Има ли еднодневна винетка за леки автомобили?",
+    a: "Не. Най-краткият вид за леки автомобили е уикенд винетката (5,11 €), валидна от петък 12:00 ч. до неделя 23:59 ч. Дневна винетка съществува само за тежкотоварни автомобили. Подробности на страницата за <a href='/vinetka/ceni/dnevna'>еднодневната винетка</a>.",
+  },
+  {
+    q: "Откога важи винетката след покупка онлайн?",
+    a: "Електронната винетка важи от началната дата и час, които изберете при покупката — може и веднага. Няма стикер: камерите я виждат по регистрационния номер.",
+  },
+  {
+    q: "Кои пътища изискват винетка?",
+    a: "Автомагистралите и републиканските пътища I, II и III клас. Уличната мрежа в населените места и общинските пътища не изискват винетка.",
+  },
+];
+---
+
+<Base {title} {description}>
+  <Breadcrumbs crumbs={[{ href: "/vinetka/ceni", label: "Цени на винетки" }]} />
+
+  <section class="mx-auto max-w-3xl px-4 pt-6 text-center sm:px-6">
+    <h1 class="text-3xl sm:text-4xl">Цени на винетките за 2026 г.</h1>
+    <p class="mx-auto mt-3 max-w-2xl text-ink-soft sm:text-lg">
+      Официалните цени за леки автомобили до 3,5 т — в евро и лева, актуални към {PRICES_UPDATED_HUMAN}
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 pt-8 sm:px-6">
+    <PriceTable />
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 pt-10 sm:px-6">
+    <VignetteCalculator />
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <div class="prose-app">
+      <h2>Кой вид винетка да изберете</h2>
+      <p>
+        Правилото е просто: сметнете колко уикенд пътувания правите за година. До 9 пътувания —
+        по-евтино е да купувате <a href="/vinetka/ceni/uikend">уикенд винетки</a> на парче. Над 9 —
+        <a href="/vinetka/ceni/godishna">годишната</a> вече се изплаща. За отпуск до седмица е
+        <a href="/vinetka/ceni/sedmichna">седмичната</a>, за сезонна работа —
+        <a href="/vinetka/ceni/mesechna">месечната или тримесечната</a>.
+      </p>
+      <p>
+        Преди да купите нова, <a href="/vinetka/proverka">проверете дали нямате активна винетка</a> — при
+        годишните хората често забравят точната дата на изтичане.
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 pb-6 sm:px-6">
+    <Faq items={faqItems} />
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+    <div class="card flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <div>
+        <h2 class="text-xl">Избрахте вид?</h2>
+        <p class="mt-1 text-sm text-ink-soft">Купете електронната винетка онлайн — важи от минутата, която изберете.</p>
+      </div>
+      <a href="/vinetka/kupi" class="btn-primary shrink-0">Купи винетка онлайн</a>
+    </div>
+  </section>
+</Base>

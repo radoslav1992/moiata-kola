@@ -1,0 +1,201 @@
+---
+import Base from "@/layouts/Base.astro";
+import PlateCheck from "@/components/PlateCheck.astro";
+import PriceTable from "@/components/PriceTable.astro";
+import Faq from "@/components/Faq.astro";
+import { SITE } from "@/lib/site";
+import { getCollection } from "astro:content";
+
+const title = "Проверка на винетка по номер — и ГО, и ГТП наведнъж | Моята кола";
+const description =
+  "Безплатна проверка на винетка по регистрационен номер за 10 секунди. Виж валидност и срок на винетката, плюс Гражданска отговорност и ГТП — всичко на един екран, без регистрация.";
+
+const faqItems = [
+  {
+    q: "Как да проверя дали имам валидна винетка?",
+    a: "Въведете регистрационния номер на автомобила в полето по-горе и натиснете „Провери всичко“. За секунди виждате дали има валидна електронна винетка, от кой вид е и до коя дата важи. Данните идват от официалната система на БГ ТОЛ.",
+  },
+  {
+    q: "Безплатна ли е проверката на винетка?",
+    a: "Да, напълно. Проверката на винетка, Гражданска отговорност и ГТП е безплатна, без регистрация и без ограничение в броя проверки.",
+  },
+  {
+    q: "Какво ми трябва, за да направя проверката?",
+    a: "Само регистрационният номер на автомобила (както е изписан на табелата, напр. СВ 1234 АВ). Не са нужни ЕГН, талон или други лични данни.",
+  },
+  {
+    q: "Официална ли е тази проверка?",
+    a: "Сайтът е неофициален инструмент, но резултатите идват от официалните системи: БГ ТОЛ за винетки, Гаранционен фонд за Гражданска отговорност и ИААА за ГТП. При разминаване меродавни са официалните регистри.",
+  },
+  {
+    q: "Мога ли да проверя винетка на чужд автомобил?",
+    a: "Да — проверката е публична и работи с всеки български регистрационен номер. Това е полезно например при покупка на кола втора ръка или преди да тръгнете с колата на роднина.",
+  },
+  {
+    q: "Колко струва винетката в момента?",
+    a: "Годишната винетка за лек автомобил е 49,60 € (97 лв.), месечната — 15,34 € (30 лв.), седмичната — 7,67 € (15 лв.), а уикенд винетката — 5,11 € (10 лв.). Пълната таблица е на страницата <a href='/vinetka/ceni'>Цени на винетки</a>.",
+  },
+];
+
+const appSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Моята кола — проверка на винетка, ГО и ГТП по номер",
+  url: SITE.url,
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Any",
+  inLanguage: "bg",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+  description,
+};
+
+const checks = [
+  {
+    href: "/vinetka/proverka",
+    title: "Проверка на винетка",
+    text: "Валидност, вид и срок на електронната винетка — директно от БГ ТОЛ.",
+  },
+  {
+    href: "/grazhdanska-otgovornost/proverka",
+    title: "Гражданска отговорност",
+    text: "Има ли колата валидна задължителна застраховка — справка в Гаранционен фонд.",
+  },
+  {
+    href: "/gtp/proverka",
+    title: "ГТП валидност",
+    text: "Кога е минат последният технически преглед и докога важи.",
+  },
+  {
+    href: "/globi/proverka",
+    title: "Глоби от КАТ",
+    text: "Стъпка по стъпка: как да видите задълженията си във всички официални системи.",
+  },
+];
+
+const latestArticles = (await getCollection("statii"))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 3);
+---
+
+<Base {title} {description} schema={[appSchema]}>
+  <!-- Героят: инструментът е над сгъвката, винаги -->
+  <section class="mx-auto max-w-5xl px-4 pt-10 pb-4 sm:px-6 sm:pt-14">
+    <div class="mx-auto max-w-2xl text-center">
+      <h1 class="text-3xl sm:text-[2.6rem] sm:leading-[1.15]">
+        Провери колата си за <span class="text-accent">10 секунди</span>
+      </h1>
+      <p class="mt-3 text-base text-ink-soft sm:text-lg">
+        Винетка, Гражданска отговорност и ГТП — една проверка по регистрационен номер, на едно място.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-8 max-w-2xl">
+      <PlateCheck checks={["vignette", "insurance", "inspection"]} buttonLabel="Провери всичко" />
+    </div>
+
+    <ul class="mx-auto mt-5 flex max-w-2xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ink-soft">
+      {
+        ["Безплатно", "Без регистрация", "Данни от официалните системи"].map((t) => (
+          <li class="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2.5 7.5 5.5 10.5 11.5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="text-accent" />
+            </svg>
+            {t}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- Четирите проверки -->
+  <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <h2 class="text-2xl">Всички проверки на едно място</h2>
+    <p class="mt-2 max-w-2xl text-ink-soft">
+      Вместо четири различни сайта — една табела, един бутон. Всяка проверка си има и самостоятелна страница с подробно ръководство.
+    </p>
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      {
+        checks.map((c) => (
+          <a href={c.href} class="card group p-6 transition-colors hover:border-accent">
+            <h3 class="flex items-center justify-between text-lg font-semibold">
+              {c.title}
+              <span class="text-ink-faint transition-transform group-hover:translate-x-0.5 group-hover:text-accent" aria-hidden="true">→</span>
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-soft">{c.text}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Цени тийзър -->
+  <section class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 class="text-2xl">Цени на винетките</h2>
+        <p class="mt-2 text-ink-soft">В евро и лева, винаги актуални.</p>
+      </div>
+      <a href="/vinetka/ceni" class="btn-secondary">Всички цени и калкулатор</a>
+    </div>
+    <div class="mt-6">
+      <PriceTable compact />
+    </div>
+  </section>
+
+  <!-- Защо този сайт -->
+  <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div class="card grid gap-8 p-6 sm:grid-cols-3 sm:p-8">
+      {
+        [
+          {
+            t: "Една табела, три отговора",
+            d: "Никой друг не показва винетка, ГО и ГТП на един екран. Въвеждате номера веднъж.",
+          },
+          {
+            t: "Официални източници",
+            d: "БГ ТОЛ, Гаранционен фонд и ИААА. Показваме и кога точно е направена проверката.",
+          },
+          {
+            t: "Без следа",
+            d: "Не искаме ЕГН, имейл или регистрация. Номерата не се съхраняват, свързани с личност.",
+          },
+        ].map((b) => (
+          <div>
+            <h3 class="text-base font-semibold">{b.t}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-soft">{b.d}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <Faq items={faqItems} />
+  </section>
+
+  <!-- Последни статии -->
+  {
+    latestArticles.length > 0 && (
+      <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h2 class="text-2xl">Полезно от блога</h2>
+          <a href="/statii" class="text-sm font-semibold text-accent hover:underline">
+            Всички статии →
+          </a>
+        </div>
+        <div class="mt-6 grid gap-4 sm:grid-cols-3">
+          {latestArticles.map((a) => (
+            <a href={`/statii/${a.id}`} class="card group flex flex-col p-5 transition-colors hover:border-accent">
+              <h3 class="text-base font-semibold group-hover:text-accent">{a.data.title}</h3>
+              <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-ink-soft">{a.data.description}</p>
+              <time datetime={a.data.pubDate.toISOString()} class="mt-3 text-xs text-ink-faint">
+                {a.data.pubDate.toLocaleDateString("bg-BG", { day: "numeric", month: "long", year: "numeric" })}
+              </time>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</Base>

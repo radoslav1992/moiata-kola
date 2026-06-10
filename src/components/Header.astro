@@ -1,0 +1,72 @@
+---
+import { NAV_LINKS, SITE } from "@/lib/site";
+
+const path = Astro.url.pathname.replace(/\/$/, "");
+const isActive = (href: string) => path === href || path.startsWith(href + "/");
+---
+
+<header class="sticky top-0 z-40 border-b border-line bg-canvas/90 backdrop-blur">
+  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    <a href="/" class="flex items-center gap-2.5" aria-label={`${SITE.name} — начало`}>
+      <span
+        class="flex h-8 items-center gap-1 rounded-md border-2 border-ink/80 bg-white py-0.5 pr-2 pl-0.5"
+        aria-hidden="true"
+      >
+        <span class="flex h-full w-3.5 flex-col items-center justify-center rounded-sm bg-accent text-[0.5rem] leading-none text-white">
+          <span class="text-[0.4rem]">★</span>
+          <span class="font-plate font-semibold">BG</span>
+        </span>
+        <span class="font-plate text-sm font-semibold tracking-wider text-ink">МК</span>
+      </span>
+      <span class="text-base font-semibold tracking-tight">{SITE.name}</span>
+    </a>
+
+    <nav class="hidden items-center gap-1 md:flex" aria-label="Основна навигация">
+      {
+        NAV_LINKS.map((link) => (
+          <a
+            href={link.href}
+            class:list={[
+              "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              isActive(link.href)
+                ? "bg-accent-soft text-accent-strong"
+                : "text-ink-soft hover:bg-accent-soft/60 hover:text-ink",
+            ]}
+            aria-current={isActive(link.href) ? "page" : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <details class="relative md:hidden">
+      <summary
+        class="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-line bg-card text-ink-soft [&::-webkit-details-marker]:hidden"
+        aria-label="Меню"
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      </summary>
+      <nav
+        class="absolute right-0 mt-2 w-56 rounded-xl border border-line bg-card p-2"
+        aria-label="Мобилна навигация"
+      >
+        {
+          NAV_LINKS.map((link) => (
+            <a
+              href={link.href}
+              class:list={[
+                "block rounded-lg px-3 py-2.5 text-sm font-medium",
+                isActive(link.href) ? "bg-accent-soft text-accent-strong" : "text-ink-soft hover:bg-canvas",
+              ]}
+            >
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+    </details>
+  </div>
+</header>

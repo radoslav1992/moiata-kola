@@ -1,0 +1,43 @@
+---
+import Base from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import { SITE } from "@/lib/site";
+
+const title = `Контакти | ${SITE.name}`;
+const description = `Свържете се с екипа на ${SITE.name} — сигнали за неточни данни, партньорства и предложения.`;
+---
+
+<Base {title} {description}>
+  <Breadcrumbs crumbs={[{ href: "/kontakti", label: "Контакти" }]} />
+
+  <section class="mx-auto max-w-3xl px-4 pt-6 sm:px-6">
+    <h1 class="text-3xl sm:text-4xl">Контакти</h1>
+    <p class="mt-3 max-w-xl text-ink-soft">
+      Най-бързият начин да ни стигнете е имейлът. Отговаряме в рамките на 1–2 работни дни, а сигналите за
+      неточни данни гледаме с предимство.
+    </p>
+
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      <div class="card p-6">
+        <h2 class="text-base font-semibold">Имейл</h2>
+        <a href={`mailto:${SITE.email}`} class="mt-2 inline-block font-medium text-accent hover:underline">
+          {SITE.email}
+        </a>
+        <p class="mt-2 text-sm text-ink-soft">За всичко: грешки, идеи, медийни запитвания.</p>
+      </div>
+      <div class="card p-6">
+        <h2 class="text-base font-semibold">Партньорства</h2>
+        <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+          Застрахователни брокери и продавачи на е-винетки — пишете ни със subject „Партньорство“.
+          Интегрираме само услуги, които сами бихме ползвали.
+        </p>
+      </div>
+    </div>
+
+    <div class="card mt-4 border-l-4 border-l-accent p-5 text-sm leading-relaxed text-ink-soft">
+      Преди да пишете за „винетката ми не се показва“ — минете през
+      <a href="/statii/kupih-vinetka-no-ne-se-pokazva" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">готовото ръководство</a>:
+      в 9 от 10 случая решението е там, и е по-бързо от имейл.
+    </div>
+  </section>
+</Base>

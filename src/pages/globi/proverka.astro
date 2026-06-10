@@ -1,0 +1,92 @@
+---
+import Base from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import Faq from "@/components/Faq.astro";
+import { OFFICIAL_SOURCES, toolTitle } from "@/lib/site";
+
+const title = toolTitle("Проверка на глоби — КАТ и винетки");
+const description =
+  "Проверка на глоби за винетки и от КАТ: всички официални начини стъпка по стъпка — с ПИК на НАП, с електронна услуга на МВР и на гише. Какво ви трябва и какви са сроковете.";
+
+const faqItems = [
+  {
+    q: "Как се проверява глоба за винетка?",
+    a: "Глобите и компенсаторните такси за движение без винетка се установяват от тол камерите и се проверяват в системата на МВР (e-uslugi.mvr.bg) или на гише в КАТ. За справката онлайн ви трябват ЕГН и номер на свидетелството за управление.",
+  },
+  {
+    q: "Мога ли да проверя глоби само по регистрационен номер?",
+    a: "Не — за разлика от винетката, справките за глоби съдържат лични данни и затова официалните системи изискват идентификация: ЕГН + номер на СУМПС или ПИК на НАП. Това е и причината тук да няма поле за директна проверка.",
+  },
+  {
+    q: "Какво е компенсаторна такса и кога ме спасява от глоба?",
+    a: "Ако сте засечени без винетка, можете да платите компенсаторна такса от 70 лв. (35,79 €) за лек автомобил в 14-дневен срок и така избягвате глобата от 300 лв. (153,39 €). Подробности в статията за <a href='/statii/globa-za-lipsvashta-vinetka'>глобата за липсваща винетка</a>.",
+  },
+  {
+    q: "Глобите от тол камери идват ли по пощата?",
+    a: "Електронните фишове се изпращат на адреса по регистрация на собственика, но често със закъснение. По-сигурно е периодично да проверявате в системата на МВР, особено след пътуване без сигурна винетка.",
+  },
+  {
+    q: "Мога ли да платя глобата онлайн?",
+    a: "Да — електронните фишове и наказателните постановления се плащат през портала на МВР с карта, както и в банка или каса на EasyPay. При плащане в 14-дневен срок повечето фишове са с 20% отстъпка.",
+  },
+];
+---
+
+<Base {title} {description}>
+  <Breadcrumbs crumbs={[{ href: "/globi/proverka", label: "Проверка на глоби" }]} />
+
+  <section class="mx-auto max-w-5xl px-4 pt-6 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <h1 class="text-3xl sm:text-4xl">Проверка на глоби за винетки и от КАТ</h1>
+      <p class="mt-3 text-ink-soft sm:text-lg">
+        Глобите изискват идентификация с лични данни, затова официалните системи нямат публична справка по
+        номер. Ето всички работещи начини — стъпка по стъпка.
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <div class="space-y-5">
+      <div class="card p-6 sm:p-7">
+        <p class="font-plate text-3xl font-semibold text-accent">1</p>
+        <h2 class="mt-1 text-xl font-semibold">Онлайн през МВР (най-бързо)</h2>
+        <ol class="mt-3 list-decimal space-y-2 pl-5 text-[0.95rem] leading-relaxed text-ink-soft">
+          <li>Отворете <a href={OFFICIAL_SOURCES.mvr.checkUrl} rel="nofollow noopener" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">e-uslugi.mvr.bg</a> → „Проверка на задължения“;</li>
+          <li>Въведете ЕГН и номер на свидетелството за управление;</li>
+          <li>Виждате всички неплатени фишове и наказателни постановления — с номер, дата и сума;</li>
+          <li>Плащате директно с карта, без такса.</li>
+        </ol>
+      </div>
+
+      <div class="card p-6 sm:p-7">
+        <p class="font-plate text-3xl font-semibold text-accent">2</p>
+        <h2 class="mt-1 text-xl font-semibold">С ПИК на НАП</h2>
+        <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+          Ако имате персонален идентификационен код от НАП, в портала на агенцията виждате и предадените за
+          събиране стари глоби (тези, които вече са при НАП/ЧСИ). ПИК се издава безплатно във всеки офис на
+          НАП за минути.
+        </p>
+      </div>
+
+      <div class="card p-6 sm:p-7">
+        <p class="font-plate text-3xl font-semibold text-accent">3</p>
+        <h2 class="mt-1 text-xl font-semibold">На гише в КАТ</h2>
+        <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+          Във всяко звено „Пътна полиция“ с лична карта получавате пълна справка и можете да платите на
+          място с карта. Това е и единственият начин, ако нямате българско СУМПС.
+        </p>
+      </div>
+    </div>
+
+    <div class="card mt-8 border-l-4 border-l-accent p-5 text-sm leading-relaxed text-ink-soft">
+      <strong class="text-ink">Защо тук няма поле за проверка по номер?</strong> Справките за глоби съдържат
+      лични данни и официалните системи изискват идентификация (ЕГН + документ). Ние не събираме и не
+      съхраняваме такива данни — затова ви водим директно към официалните канали. Винетката, ГО и ГТП обаче
+      се проверяват публично — <a href="/" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">проверете ги за 10 секунди тук</a>.
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 pb-10 sm:px-6">
+    <Faq items={faqItems} />
+  </section>
+</Base>
