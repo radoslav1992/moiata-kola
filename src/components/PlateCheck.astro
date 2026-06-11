@@ -151,6 +151,14 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
       <div class="mt-2 h-4 w-48 rounded bg-canvas"></div>
     </div>`;
 
+  /** CB1234AB → „CB 1234 AB“ за по-четим вход */
+  const prettyPlate = (plate: string) =>
+    plate.replace(/^([A-Z]{1,2})(\d{4})([A-Z]{1,2})$/, "$1 $2 $3");
+
+  const LAST_PLATE_KEY = "last-plate";
+  const urlPlate = normalizePlate(new URLSearchParams(location.search).get("plate") ?? "");
+  let autoSubmitted = false;
+
   for (const root of document.querySelectorAll<HTMLElement>("[data-plate-check]")) {
     const form = root.querySelector("form")!;
     const input = form.querySelector<HTMLInputElement>("input[name=plate]")!;
@@ -158,6 +166,14 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
     const resultsEl = root.querySelector<HTMLElement>("[data-results]")!;
     const timestampEl = root.querySelector<HTMLElement>("[data-timestamp]")!;
     const kinds = (root.dataset.checks ?? "").split(",") as CheckKind[];
+
+    // Предпопълване: ?plate= от URL (споделен линк) или последният проверен номер
+    const initialPlate = isValidBgPlate(urlPlate)
+      ? urlPlate
+      : normalizePlate(localStorage.getItem(LAST_PLATE_KEY) ?? "");
+    if (isValidBgPlate(initialPlate)) {
+      input.value = prettyPlate(initialPlate);
+    }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -171,6 +187,12 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
       errorEl.hidden = true;
       timestampEl.hidden = true;
       resultsEl.innerHTML = kinds.map(skeleton).join("");
+
+      // Запомняме номера и правим резултата споделяем/bookmark-ваем
+      localStorage.setItem(LAST_PLATE_KEY, plate);
+      const shareUrl = new URL(location.href);
+      shareUrl.searchParams.set("plate", plate);
+      history.replaceState(null, "", shareUrl);
 
       await Promise.all(
         kinds.map(async (kind) => {
@@ -201,5 +223,11 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
       timestampEl.textContent = `Проверено в ${now} ч. · данни от официалните системи`;
       timestampEl.hidden = false;
     });
+
+    // Отворен споделен линк (?plate=…) → проверката тръгва сама, без клик
+    if (isValidBgPlate(urlPlate) && !autoSubmitted) {
+      autoSubmitted = true;
+      form.requestSubmit();
+    }
   }
 </script>
