@@ -9,9 +9,13 @@ import node from "@astrojs/node";
 export const SITE_URL = "https://moiatakola.bg";
 
 // Продукционната цел е Cloudflare (Workers за проксиране на проверките,
-// edge кеш, ниска латентност в ЕС): build с DEPLOY_TARGET=cloudflare.
-// Локално/CI без флага се ползва Node адаптерът.
-const isCloudflare = process.env.DEPLOY_TARGET === "cloudflare";
+// edge кеш, ниска латентност в ЕС). Адаптерът се избира автоматично:
+// в Workers Builds (WORKERS_CI) / Pages (CF_PAGES) или с DEPLOY_TARGET=cloudflare
+// се билдва worker; навсякъде другаде — Node.
+const isCloudflare =
+  process.env.DEPLOY_TARGET === "cloudflare" ||
+  process.env.WORKERS_CI === "1" ||
+  !!process.env.CF_PAGES;
 
 export default defineConfig({
   site: SITE_URL,

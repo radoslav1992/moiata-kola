@@ -27,12 +27,14 @@ entry и assets binding). В Cloudflare → Workers → *Create* → свърж�
 
 | Настройка | Стойност |
 |---|---|
-| Build command | `npm run build:cloudflare` |
+| Build command | `npm run build:cloudflare` (или `npm run build` — в Workers Builds адаптерът се познава автоматично по `WORKERS_CI`) |
 | Deploy command | `npx wrangler deploy` |
 
-Ключовото е `DEPLOY_TARGET=cloudflare` (скриптът `build:cloudflare` го задава) — без него
-build-ът е за Node адаптера и `wrangler deploy` няма да намери worker entry-то
-(грешка „The entry-point file at @astrojs/cloudflare/entrypoints/server was not found“).
+Как работи: build-ът с Cloudflare адаптера записва `.wrangler/deploy/config.json`,
+който сочи към генерирания пълен wrangler конфиг в `dist/` — и `wrangler deploy` /
+`wrangler versions upload` го следват автоматично. Грешките „Missing entry-point“ или
+„entry-point @astrojs/cloudflare/entrypoints/server was not found“ значат едно и също:
+деплой стъпката е тръгнала след build за Node адаптера (без worker output).
 
 Локален деплой от машина: `npm run build:cloudflare && npx wrangler deploy`.
 
