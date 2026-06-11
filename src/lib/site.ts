@@ -1,13 +1,13 @@
 export const SITE = {
   name: "По номер",
-  domain: "moiatakola.bg",
-  url: "https://moiatakola.bg",
+  domain: "ponomer.com",
+  url: "https://ponomer.com",
   tagline:
     "Провери колата си за 10 секунди — винетка, глоби, ГТП и Гражданска отговорност на едно място.",
   description:
     "Безплатна проверка на винетка, Гражданска отговорност и ГТП по регистрационен номер. Актуални цени на винетки в евро и лева. Неофициален инструмент с данни от официалните системи.",
   locale: "bg_BG",
-  email: "kontakt@moiatakola.bg",
+  email: "kontakt@ponomer.com",
 } as const;
 
 /**
