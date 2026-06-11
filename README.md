@@ -70,10 +70,11 @@ npx wrangler kv namespace create CHECK_CACHE
 
 ### Реклама и съгласие
 
-`ADS_ENABLED` в `src/lib/site.ts` (по подразбиране `false`). При включване Base монтира
-банера за съгласие (`ConsentBanner.astro`); изборът се пази в localStorage `ad-consent`,
-а рекламният loader трябва да зарежда само при стойност `granted` (и да слуша събитието
-`ad-consent-change`). Инструменталните страници остават без реклама и при включен флаг.
+Банерът за съгласие (`ConsentBanner.astro`) се монтира на всяка страница; изборът се пази в
+localStorage `cookie-consent`. Google Analytics (gtag в `Base.astro`) се зарежда само при
+стойност `granted` и слуша събитието `cookie-consent-change` за късно съгласие. Бъдещият
+рекламен loader (`ADS_ENABLED` в `src/lib/site.ts`, по подразбиране `false`) трябва да следва
+същия модел. Инструменталните страници остават без реклама и при включен флаг.
 
 ## Архитектура
 

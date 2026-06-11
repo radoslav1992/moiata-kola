@@ -12,8 +12,9 @@ export const SITE = {
 
 /**
  * Превключва се на true заедно с първия рекламен скрипт (AdSense).
- * Дотогава сайтът не ползва рекламни бисквитки и банерът за съгласие
- * не се показва (GDPR не изисква банер без такива бисквитки).
+ * Банерът за съгласие се показва винаги (заради Google Analytics);
+ * рекламният loader трябва да зарежда само при съгласие "granted"
+ * (localStorage ключ "cookie-consent") — виж ConsentBanner.astro.
  */
 export const ADS_ENABLED = false;
 
