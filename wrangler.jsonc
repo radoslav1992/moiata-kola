@@ -6,4 +6,9 @@
   "name": "moiata-kola",
   "compatibility_date": "2026-04-15",
   "compatibility_flags": ["nodejs_compat"]
+
+  // Кеш на резултатите от проверки (по желание, но препоръчително в продукция).
+  // Създайте namespace и разкоментирайте с реалното id:
+  //   npx wrangler kv namespace create CHECK_CACHE
+  // ,"kv_namespaces": [{ "binding": "CHECK_CACHE", "id": "<id от командата>" }]
 }

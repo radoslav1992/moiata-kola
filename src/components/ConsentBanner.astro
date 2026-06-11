@@ -1,0 +1,46 @@
+---
+/**
+ * Банер за съгласие с рекламни бисквитки. Монтира се от Base.astro само
+ * когато ADS_ENABLED е true (т.е. заедно с първия рекламен скрипт).
+ *
+ * Изборът се пази в localStorage под ключ "ad-consent" ("granted"/"denied").
+ * Рекламният loader трябва да се изпълнява само при "granted":
+ *   if (localStorage.getItem("ad-consent") === "granted") { ...зареди AdSense... }
+ * и да слуша събитието "ad-consent-change" за късно дадено съгласие.
+ */
+---
+
+<div
+  data-consent-banner
+  hidden
+  class="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-card p-4 sm:p-5"
+  role="region"
+  aria-label="Съгласие за бисквитки"
+>
+  <div class="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <p class="text-sm leading-relaxed text-ink-soft">
+      Статиите се издържат от реклама, която ползва бисквитки. Проверките работят без бисквитки —
+      независимо от избора ви. <a href="/poveritelnost" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">Повече за данните</a>.
+    </p>
+    <div class="flex shrink-0 gap-2">
+      <button type="button" data-consent="denied" class="btn-secondary px-4 py-2 text-sm">Отказвам</button>
+      <button type="button" data-consent="granted" class="btn-primary px-4 py-2 text-sm">Приемам</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const KEY = "ad-consent";
+  const banner = document.querySelector<HTMLElement>("[data-consent-banner]");
+
+  if (banner && !localStorage.getItem(KEY)) {
+    banner.hidden = false;
+    banner.addEventListener("click", (e) => {
+      const choice = (e.target as HTMLElement).closest<HTMLElement>("[data-consent]")?.dataset.consent;
+      if (!choice) return;
+      localStorage.setItem(KEY, choice);
+      banner.hidden = true;
+      window.dispatchEvent(new CustomEvent("ad-consent-change", { detail: choice }));
+    });
+  }
+</script>

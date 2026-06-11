@@ -27,12 +27,14 @@ entry и assets binding). В Cloudflare → Workers → *Create* → свърж�
 
 | Настройка | Стойност |
 |---|---|
-| Build command | `npm run build:cloudflare` |
+| Build command | `npm run build:cloudflare` (или `npm run build` — в Workers Builds адаптерът се познава автоматично по `WORKERS_CI`) |
 | Deploy command | `npx wrangler deploy` |
 
-Ключовото е `DEPLOY_TARGET=cloudflare` (скриптът `build:cloudflare` го задава) — без него
-build-ът е за Node адаптера и `wrangler deploy` няма да намери worker entry-то
-(грешка „The entry-point file at @astrojs/cloudflare/entrypoints/server was not found“).
+Как работи: build-ът с Cloudflare адаптера записва `.wrangler/deploy/config.json`,
+който сочи към генерирания пълен wrangler конфиг в `dist/` — и `wrangler deploy` /
+`wrangler versions upload` го следват автоматично. Грешките „Missing entry-point“ или
+„entry-point @astrojs/cloudflare/entrypoints/server was not found“ значат едно и също:
+деплой стъпката е тръгнала след build за Node адаптера (без worker output).
 
 Локален деплой от машина: `npm run build:cloudflare && npx wrangler deploy`.
 
@@ -41,6 +43,37 @@ build-ът е за Node адаптера и `wrangler deploy` няма да на
 - `imageService: "compile"` → не е нужен IMAGES binding;
 - Cloudflare build-ът изисква изходяща мрежа (workerd тегли конфигурация от Cloudflare),
   затова в офлайн среди се ползва `npm run build` (Node адаптер).
+
+### KV кеш на проверките (препоръчително в продукция)
+
+Без binding кешът е in-memory (per-isolate — почти безполезен на Workers). За истински кеш:
+
+```sh
+npx wrangler kv namespace create CHECK_CACHE
+```
+
+и разкоментирайте `kv_namespaces` в `wrangler.jsonc` с върнатото id. Кодът го засича сам
+(`src/lib/checks/cache.ts`); кешират се само успешни резултати, TTL 120 s.
+
+### Rate limit на /api/check/*
+
+Два слоя:
+
+1. **В кода** (`src/lib/checks/rate-limit.ts`): 30 заявки/мин на IP, връща 429.
+   На Workers това е per-isolate → защита в дълбочина, не основната линия.
+2. **Cloudflare WAF** (основната линия) — изисква сайтът да е на ваш домейн в зоната:
+   Dashboard → домейнът → **Security → WAF → Rate limiting rules → Create rule**:
+   - Expression: `(starts_with(http.request.uri.path, "/api/check/"))`
+   - Characteristics: IP адрес
+   - Rate: напр. 20 заявки / 10 секунди → Action: **Block** за 1 минута
+   На Free плана имате 1 rate limiting правило — това е правилното място за него.
+
+### Реклама и съгласие
+
+`ADS_ENABLED` в `src/lib/site.ts` (по подразбиране `false`). При включване Base монтира
+банера за съгласие (`ConsentBanner.astro`); изборът се пази в localStorage `ad-consent`,
+а рекламният loader трябва да зарежда само при стойност `granted` (и да слуша събитието
+`ad-consent-change`). Инструменталните страници остават без реклама и при включен флаг.
 
 ## Архитектура
 

@@ -177,13 +177,17 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
           let html: string;
           try {
             const res = await fetch(`/api/check/${kind}?plate=${encodeURIComponent(plate)}`);
-            if (!res.ok) throw new Error(String(res.status));
-            html = renderResult((await res.json()) as CheckResult);
-          } catch {
+            const body = (await res.json()) as CheckResult | { message?: string };
+            if (!res.ok) throw new Error((body as { message?: string }).message);
+            html = renderResult(body as CheckResult);
+          } catch (err) {
             html = renderResult({
               kind,
               status: "error",
-              message: "Проверката е временно недостъпна. Опитайте отново след малко.",
+              message:
+                err instanceof Error && err.message
+                  ? err.message
+                  : "Проверката е временно недостъпна. Опитайте отново след малко.",
               officialUrl: "",
               checkedAt: new Date().toISOString(),
             });

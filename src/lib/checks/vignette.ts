@@ -12,12 +12,6 @@ import { daysUntil, type CheckResult } from "./types";
 
 const ENDPOINT = "https://check.bgtoll.bg/check/vignette/plate";
 
-/* Кратък кеш в паметта: реже повторни заявки към БГ ТОЛ за същия номер.
-   Бележка за продукция: на Cloudflare Workers това е per-isolate; при
-   нужда се мести в KV със същия интерфейс. */
-const CACHE_TTL_MS = 2 * 60 * 1000;
-const cache = new Map<string, { result: CheckResult; expires: number }>();
-
 interface BgTollVignette {
   validityDateFrom?: string;
   validityDateTo?: string;
@@ -27,11 +21,6 @@ interface BgTollVignette {
 }
 
 export async function checkVignette(plate: string): Promise<CheckResult> {
-  const cached = cache.get(plate);
-  if (cached && cached.expires > Date.now()) {
-    return cached.result;
-  }
-
   const checkedAt = new Date().toISOString();
   let result: CheckResult;
 
@@ -73,6 +62,5 @@ export async function checkVignette(plate: string): Promise<CheckResult> {
     };
   }
 
-  cache.set(plate, { result, expires: Date.now() + CACHE_TTL_MS });
   return result;
 }

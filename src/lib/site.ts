@@ -10,6 +10,13 @@ export const SITE = {
   email: "kontakt@moiatakola.bg",
 } as const;
 
+/**
+ * Превключва се на true заедно с първия рекламен скрипт (AdSense).
+ * Дотогава сайтът не ползва рекламни бисквитки и банерът за съгласие
+ * не се показва (GDPR не изисква банер без такива бисквитки).
+ */
+export const ADS_ENABLED = false;
+
 export const OFFICIAL_SOURCES = {
   bgtoll: {
     name: "БГ ТОЛ (Национално тол управление)",
