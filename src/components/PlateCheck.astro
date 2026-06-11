@@ -3,6 +3,8 @@
  * Подписният елемент на сайта: вход като българска регистрационна табела
  * + резултати от проверките. Работи без регистрация, на всяко устройство.
  */
+import { OFFICIAL_SOURCES } from "@/lib/site";
+
 interface Props {
   /** Кои проверки прави този екземпляр (началната страница ползва и трите) */
   checks: ("vignette" | "insurance" | "inspection")[];
@@ -13,7 +15,13 @@ interface Props {
 const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.props;
 ---
 
-<section class="card p-5 sm:p-8" data-plate-check data-checks={checks.join(",")} id={id}>
+<section
+  class="card p-5 sm:p-8"
+  data-plate-check
+  data-checks={checks.join(",")}
+  data-rta={OFFICIAL_SOURCES.rta.checkUrl}
+  id={id}
+>
   <form class="flex flex-col items-center gap-4" novalidate>
     <label class="sr-only" for={`${id}-input`}>Регистрационен номер</label>
 
@@ -66,6 +74,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
 
 <script>
   import { normalizePlate, isValidBgPlate, type CheckResult, type CheckKind } from "@/lib/checks/types";
+  import { mountGtp } from "@/lib/checks/gtp-client";
 
   const LABELS: Record<CheckKind, string> = {
     vignette: "Винетка",
@@ -167,6 +176,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
     const resultsEl = root.querySelector<HTMLElement>("[data-results]")!;
     const timestampEl = root.querySelector<HTMLElement>("[data-timestamp]")!;
     const kinds = (root.dataset.checks ?? "").split(",") as CheckKind[];
+    const rtaUrl = root.dataset.rta ?? "";
 
     // Предпопълване: ?plate= от URL (споделен линк) или последният проверен номер
     const initialPlate = isValidBgPlate(urlPlate)
@@ -197,6 +207,18 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
 
       await Promise.all(
         kinds.map(async (kind) => {
+          // ГТП минава през relay (captcha се решава от потребителя в самата карта),
+          // а не през /api/check/inspection — затова бързите проверки не чакат кода.
+          if (kind === "inspection") {
+            const slot = resultsEl.querySelector(`[data-skeleton="inspection"]`);
+            if (slot) {
+              const container = document.createElement("div");
+              slot.replaceWith(container);
+              mountGtp(container, plate, rtaUrl);
+            }
+            return;
+          }
+
           let html: string;
           try {
             const res = await fetch(`/api/check/${kind}?plate=${encodeURIComponent(plate)}`);
