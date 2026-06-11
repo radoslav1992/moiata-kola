@@ -65,6 +65,16 @@ const baseSchema = [
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="theme-color" content="#f7f9fb" />
 
+    <!-- Google tag (gtag.js) -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-D9YJY1M1RR"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-D9YJY1M1RR');
+    </script>
+
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:locale" content={SITE.locale} />
