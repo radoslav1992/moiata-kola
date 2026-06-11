@@ -3,7 +3,7 @@ import "@/styles/global.css";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import ConsentBanner from "@/components/ConsentBanner.astro";
-import { SITE, ADS_ENABLED } from "@/lib/site";
+import { SITE } from "@/lib/site";
 
 interface Props {
   title: string;
@@ -65,14 +65,26 @@ const baseSchema = [
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="theme-color" content="#f7f9fb" />
 
-    <!-- Google tag (gtag.js) -->
-    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-D9YJY1M1RR"></script>
+    <!-- Google tag (gtag.js) — зарежда се само при съгласие от банера за бисквитки -->
     <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-D9YJY1M1RR');
+      (function () {
+        function loadGA() {
+          if (window.__gaLoaded) return;
+          window.__gaLoaded = true;
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function () { dataLayer.push(arguments); };
+          gtag("js", new Date());
+          gtag("config", "G-D9YJY1M1RR");
+          var s = document.createElement("script");
+          s.async = true;
+          s.src = "https://www.googletagmanager.com/gtag/js?id=G-D9YJY1M1RR";
+          document.head.appendChild(s);
+        }
+        if (localStorage.getItem("cookie-consent") === "granted") loadGA();
+        else window.addEventListener("cookie-consent-change", function (e) {
+          if (e.detail === "granted") loadGA();
+        });
+      })();
     </script>
 
     <meta property="og:type" content={ogType} />
@@ -100,6 +112,6 @@ const baseSchema = [
       <slot />
     </main>
     <Footer />
-    {ADS_ENABLED && <ConsentBanner />}
+    <ConsentBanner />
   </body>
 </html>

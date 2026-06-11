@@ -1,12 +1,14 @@
 ---
 /**
- * Банер за съгласие с рекламни бисквитки. Монтира се от Base.astro само
- * когато ADS_ENABLED е true (т.е. заедно с първия рекламен скрипт).
+ * Банер за съгласие с бисквитки (аналитични + рекламни). Монтира се от
+ * Base.astro на всяка страница — Google Analytics се зарежда само при
+ * съгласие, затова банерът не зависи от ADS_ENABLED.
  *
- * Изборът се пази в localStorage под ключ "ad-consent" ("granted"/"denied").
- * Рекламният loader трябва да се изпълнява само при "granted":
- *   if (localStorage.getItem("ad-consent") === "granted") { ...зареди AdSense... }
- * и да слуша събитието "ad-consent-change" за късно дадено съгласие.
+ * Изборът се пази в localStorage под ключ "cookie-consent" ("granted"/"denied").
+ * Скриптове, които ползват бисквитки (GA, бъдещ AdSense), се изпълняват само
+ * при "granted":
+ *   if (localStorage.getItem("cookie-consent") === "granted") { ...зареди... }
+ * и слушат събитието "cookie-consent-change" за късно дадено съгласие.
  */
 ---
 
@@ -19,8 +21,9 @@
 >
   <div class="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <p class="text-sm leading-relaxed text-ink-soft">
-      Статиите се издържат от реклама, която ползва бисквитки. Проверките работят без бисквитки —
-      независимо от избора ви. <a href="/poveritelnost" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">Повече за данните</a>.
+      Ползваме бисквитки за анонимна статистика (Google Analytics), а статиите може да показват реклама.
+      Проверките работят без бисквитки — независимо от избора ви.
+      <a href="/poveritelnost" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">Повече за данните</a>.
     </p>
     <div class="flex shrink-0 gap-2">
       <button type="button" data-consent="denied" class="btn-secondary px-4 py-2 text-sm">Отказвам</button>
@@ -30,7 +33,7 @@
 </div>
 
 <script>
-  const KEY = "ad-consent";
+  const KEY = "cookie-consent";
   const banner = document.querySelector<HTMLElement>("[data-consent-banner]");
 
   if (banner && !localStorage.getItem(KEY)) {
@@ -40,7 +43,7 @@
       if (!choice) return;
       localStorage.setItem(KEY, choice);
       banner.hidden = true;
-      window.dispatchEvent(new CustomEvent("ad-consent-change", { detail: choice }));
+      window.dispatchEvent(new CustomEvent("cookie-consent-change", { detail: choice }));
     });
   }
 </script>
