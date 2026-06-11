@@ -7,7 +7,7 @@ import { daysUntil, type CheckResult } from "./types";
  *
  *   GET /check/vignette/plate/{държава}/{номер}
  *
- * където номерът е в "табелен" формат с интервали: "CB 2951 AM".
+ * Номерът се приема и без интервали (CB2951AM).
  * При отказ или неочакван отговор връщаме "manual" резултат с дълбок линк
  * към официалната проверка и поле reason за диагностика — никога счупен екран.
  */
@@ -23,10 +23,6 @@ interface BgTollVignette {
   vignetteValidityType?: { name?: string };
 }
 
-/** CB2951AM → "CB 2951 AM" — форматът, който endpoint-ът очаква */
-const spacedPlate = (plate: string) =>
-  plate.replace(/^([A-Z]{1,2})(\d{4})([A-Z]{1,2})$/, "$1 $2 $3");
-
 /** "01.06.2027" → ISO дата (резервен вариант, ако липсва машинният формат) */
 function parseFormatedDate(value: string): string | undefined {
   const m = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
@@ -37,7 +33,7 @@ export async function checkVignette(plate: string): Promise<CheckResult> {
   const checkedAt = new Date().toISOString();
 
   try {
-    const url = `${ENDPOINT_BASE}/BG/${encodeURIComponent(spacedPlate(plate))}`;
+    const url = `${ENDPOINT_BASE}/BG/${plate}`;
     const res = await fetch(url, {
       headers: {
         accept: "application/json, text/plain, */*",
