@@ -32,11 +32,21 @@ const ogImage = new URL("/og-default.png", Astro.site).href;
 const baseSchema = [
   {
     "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${SITE.url}/#organization`,
+    name: SITE.name,
+    url: SITE.url,
+    email: SITE.email,
+    logo: new URL("/favicon.svg", SITE.url).href,
+  },
+  {
+    "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE.name,
     url: SITE.url,
     inLanguage: "bg",
     description: SITE.description,
+    publisher: { "@id": `${SITE.url}/#organization` },
   },
   ...schema,
 ];
