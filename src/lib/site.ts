@@ -1,5 +1,5 @@
 export const SITE = {
-  name: "Моята кола",
+  name: "По номер",
   domain: "moiatakola.bg",
   url: "https://moiatakola.bg",
   tagline:
