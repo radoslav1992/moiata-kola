@@ -69,13 +69,23 @@ export async function getCaptcha(): Promise<CaptchaPayload> {
   session = extractSession(res.headers.get("set-cookie")) ?? session;
   if (!session) throw new Error("no session from upstream");
 
-  const contentType = res.headers.get("content-type") ?? "image/png";
   const bytes = new Uint8Array(await res.arrayBuffer());
+  // ИААА връща картинката с грешен content-type (text/html), затова
+  // типът се определя по magic bytes — иначе data: URL-ът е невалиден.
+  const mime = sniffImageMime(bytes);
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
-  const image = `data:${contentType};base64,${btoa(binary)}`;
+  const image = `data:${mime};base64,${btoa(binary)}`;
 
   return { session, image };
+}
+
+/** Разпознава image MIME по сигнатурата на първите байтове */
+function sniffImageMime(b: Uint8Array): string {
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "image/png";
+  if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) return "image/gif";
+  return "image/png";
 }
 
 export type GtpResult =
