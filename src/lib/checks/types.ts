@@ -21,6 +21,8 @@ export type CheckResult =
       officialUrl: string;
       note: string;
       checkedAt: string;
+      /** Техническа причина за fallback-а (status код/грешка) — за диагностика */
+      reason?: string;
     }
   | {
       kind: CheckKind;

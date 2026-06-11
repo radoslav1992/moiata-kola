@@ -27,12 +27,22 @@ export async function checkVignette(plate: string): Promise<CheckResult> {
   try {
     const res = await fetch(ENDPOINT, {
       method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json" },
+      // Заявката повтаря тази на официалната страница: check.bgtoll.bg има
+      // бот-филтър и отказва "голи" клиенти (403 за datacenter/non-browser).
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/plain, */*",
+        "accept-language": "bg",
+        origin: "https://check.bgtoll.bg",
+        referer: "https://check.bgtoll.bg/",
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+      },
       body: JSON.stringify({ vehicleNumber: plate, region: "BG" }),
       signal: AbortSignal.timeout(8000),
     });
 
-    if (!res.ok) throw new Error(`upstream ${res.status}`);
+    if (!res.ok) throw new Error(`upstream HTTP ${res.status}`);
     const data = (await res.json()) as { ok?: boolean; vignette?: BgTollVignette | null };
 
     if (data.vignette?.validityDateTo) {
@@ -52,13 +62,17 @@ export async function checkVignette(plate: string): Promise<CheckResult> {
     } else {
       throw new Error("unexpected upstream shape");
     }
-  } catch {
+  } catch (err) {
+    const reason = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+    // Видимо в Cloudflare → Workers → Logs (или `npx wrangler tail`)
+    console.error(`[vignette] БГ ТОЛ недостъпен за ${plate}: ${reason}`);
     result = {
       kind: "vignette",
       status: "manual",
       officialUrl: OFFICIAL_SOURCES.bgtoll.checkUrl,
       note: "Връзката с БГ ТОЛ е временно недостъпна. Проверете директно в официалната система — отнема под минута.",
       checkedAt,
+      reason,
     };
   }
 
