@@ -6,7 +6,7 @@ import node from "@astrojs/node";
 
 // Единственото място, където живее каноничният домейн.
 // При смяна на домейна се променя само тук.
-export const SITE_URL = "https://moiatakola.bg";
+export const SITE_URL = "https://ponomer.com";
 
 // Продукционната цел е Cloudflare (Workers за проксиране на проверките,
 // edge кеш, ниска латентност в ЕС). Адаптерът се избира автоматично:

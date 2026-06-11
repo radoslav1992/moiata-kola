@@ -1,4 +1,4 @@
-# По номер (moiatakola.bg)
+# По номер (ponomer.com)
 
 > Безплатна проверка на винетка, Гражданска отговорност, ГТП и глоби по български регистрационен номер — на едно място, без регистрация и без лични данни. Данните идват в реално време от официалните системи: БГ ТОЛ (винетки), Гаранционен фонд (Гражданска отговорност) и ИААА (ГТП). Сайтът е неофициален инструмент; при разминаване меродавни са официалните регистри. Език: български.
 
@@ -12,37 +12,37 @@
 
 ## Инструменти (безплатни проверки)
 
-- [Проверка на винетка](https://moiatakola.bg/vinetka/proverka): валидност, вид и краен срок на електронната винетка, данни от БГ ТОЛ
-- [Проверка на Гражданска отговорност](https://moiatakola.bg/grazhdanska-otgovornost/proverka): активна полица по номер, данни от Гаранционен фонд
-- [Проверка на ГТП](https://moiatakola.bg/gtp/proverka): валидност на годишния технически преглед, данни от ИААА
-- [Проверка на глоби](https://moiatakola.bg/globi/proverka): задължения и електронни фишове към МВР
-- [Начало — проверка на всичко наведнъж](https://moiatakola.bg/): винетка, ГО и ГТП с едно въвеждане
+- [Проверка на винетка](https://ponomer.com/vinetka/proverka): валидност, вид и краен срок на електронната винетка, данни от БГ ТОЛ
+- [Проверка на Гражданска отговорност](https://ponomer.com/grazhdanska-otgovornost/proverka): активна полица по номер, данни от Гаранционен фонд
+- [Проверка на ГТП](https://ponomer.com/gtp/proverka): валидност на годишния технически преглед, данни от ИААА
+- [Проверка на глоби](https://ponomer.com/globi/proverka): задължения и електронни фишове към МВР
+- [Начало — проверка на всичко наведнъж](https://ponomer.com/): винетка, ГО и ГТП с едно въвеждане
 
 ## Цени и купуване
 
-- [Цени на винетките 2026](https://moiatakola.bg/vinetka/ceni): пълна таблица в евро и лева + калкулатор за най-изгоден вид
-- [Годишна винетка](https://moiatakola.bg/vinetka/ceni/godishna): цена и валидност
-- [Месечна и тримесечна винетка](https://moiatakola.bg/vinetka/ceni/mesechna): цени
-- [Седмична винетка](https://moiatakola.bg/vinetka/ceni/sedmichna): цена
-- [Уикенд винетка](https://moiatakola.bg/vinetka/ceni/uikend): цена и от кога важи
-- [Еднодневна винетка](https://moiatakola.bg/vinetka/ceni/dnevna): защо няма такава за леки коли и какво да купите
-- [Купи винетка онлайн](https://moiatakola.bg/vinetka/kupi): всички канали за покупка
-- [ГТП цена](https://moiatakola.bg/gtp/cena): колко струва годишният технически преглед
-- [Безплатна винетка за хора с увреждания](https://moiatakola.bg/vinetka/za-invalidi): условия и проверка
+- [Цени на винетките 2026](https://ponomer.com/vinetka/ceni): пълна таблица в евро и лева + калкулатор за най-изгоден вид
+- [Годишна винетка](https://ponomer.com/vinetka/ceni/godishna): цена и валидност
+- [Месечна и тримесечна винетка](https://ponomer.com/vinetka/ceni/mesechna): цени
+- [Седмична винетка](https://ponomer.com/vinetka/ceni/sedmichna): цена
+- [Уикенд винетка](https://ponomer.com/vinetka/ceni/uikend): цена и от кога важи
+- [Еднодневна винетка](https://ponomer.com/vinetka/ceni/dnevna): защо няма такава за леки коли и какво да купите
+- [Купи винетка онлайн](https://ponomer.com/vinetka/kupi): всички канали за покупка
+- [ГТП цена](https://ponomer.com/gtp/cena): колко струва годишният технически преглед
+- [Безплатна винетка за хора с увреждания](https://ponomer.com/vinetka/za-invalidi): условия и проверка
 
 ## Ръководства
 
-- [Как да проверя винетката си](https://moiatakola.bg/statii/kak-da-proverya-vinetkata-si): всички начини за проверка
-- [Валидност на винетка](https://moiatakola.bg/statii/validnost-na-vinetka): до кога важи всеки вид и как се проверява срокът
-- [Видове винетки и категории](https://moiatakola.bg/statii/vidove-vinetki-kategorii): К3, бус, камион, ремарке, транзитни номера
-- [Глоба за липсваща винетка](https://moiatakola.bg/statii/globa-za-lipsvashta-vinetka): компенсаторна такса и електронен фиш
-- [Купих винетка, но не се показва](https://moiatakola.bg/statii/kupih-vinetka-no-ne-se-pokazva): стъпки при сгрешен номер
-- [Прехвърля ли се винетката](https://moiatakola.bg/statii/prehvarlya-li-se-vinetkata): продажба на кола и смяна на номера
-- [BGTOLL — какво е и как работи](https://moiatakola.bg/statii/bgtoll-kakvo-e-kak-raboti): системата за е-винетки и тол такси
-- [Всички статии](https://moiatakola.bg/statii)
+- [Как да проверя винетката си](https://ponomer.com/statii/kak-da-proverya-vinetkata-si): всички начини за проверка
+- [Валидност на винетка](https://ponomer.com/statii/validnost-na-vinetka): до кога важи всеки вид и как се проверява срокът
+- [Видове винетки и категории](https://ponomer.com/statii/vidove-vinetki-kategorii): К3, бус, камион, ремарке, транзитни номера
+- [Глоба за липсваща винетка](https://ponomer.com/statii/globa-za-lipsvashta-vinetka): компенсаторна такса и електронен фиш
+- [Купих винетка, но не се показва](https://ponomer.com/statii/kupih-vinetka-no-ne-se-pokazva): стъпки при сгрешен номер
+- [Прехвърля ли се винетката](https://ponomer.com/statii/prehvarlya-li-se-vinetkata): продажба на кола и смяна на номера
+- [BGTOLL — какво е и как работи](https://ponomer.com/statii/bgtoll-kakvo-e-kak-raboti): системата за е-винетки и тол такси
+- [Всички статии](https://ponomer.com/statii)
 
 ## За сайта
 
-- [За проекта](https://moiatakola.bg/za-proekta): кой и защо прави По номер
-- [Поверителност](https://moiatakola.bg/poveritelnost): не съхраняваме регистрационни номера и лични данни
-- [Контакти](https://moiatakola.bg/kontakti): kontakt@moiatakola.bg
+- [За проекта](https://ponomer.com/za-proekta): кой и защо прави По номер
+- [Поверителност](https://ponomer.com/poveritelnost): не съхраняваме регистрационни номера и лични данни
+- [Контакти](https://ponomer.com/kontakti): kontakt@ponomer.com
