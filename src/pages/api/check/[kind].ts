@@ -23,7 +23,31 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-export const GET: APIRoute = async ({ params, url, request, locals }) => {
+/**
+ * Cloudflare KV binding-ът в Astro 6 се чете от модула "cloudflare:workers"
+ * (Astro.locals.runtime.env е премахнат). Модулът съществува само на workerd,
+ * затова import-ът е динамичен и при Node build-а тихо връща undefined.
+ */
+let kvResolved = false;
+let kvBinding: KVLike | undefined;
+
+async function getKv(): Promise<KVLike | undefined> {
+  if (!kvResolved) {
+    kvResolved = true;
+    try {
+      const specifier = "cloudflare:workers";
+      const mod = (await import(/* @vite-ignore */ specifier)) as {
+        env?: { CHECK_CACHE?: KVLike };
+      };
+      kvBinding = mod.env?.CHECK_CACHE;
+    } catch {
+      kvBinding = undefined;
+    }
+  }
+  return kvBinding;
+}
+
+export const GET: APIRoute = async ({ params, url, request }) => {
   const kind = params.kind as CheckKind;
   const handler = HANDLERS[kind];
   if (!handler) {
@@ -46,7 +70,7 @@ export const GET: APIRoute = async ({ params, url, request, locals }) => {
   }
 
   // Cloudflare KV binding (ако е настроен); локално работи in-memory fallback
-  const kv = (locals as { runtime?: { env?: { CHECK_CACHE?: KVLike } } }).runtime?.env?.CHECK_CACHE;
+  const kv = await getKv();
   const cacheKey = `check:${kind}:${plate}`;
 
   const cached = await cacheGet(kv, cacheKey);
