@@ -1,0 +1,9 @@
+// Конфигурация за Cloudflare Workers.
+// Адаптерът на Astro допълва автоматично main (worker entry) и assets binding-а
+// по време на build (DEPLOY_TARGET=cloudflare npm run build).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "moiata-kola",
+  "compatibility_date": "2026-04-15",
+  "compatibility_flags": ["nodejs_compat"]
+}

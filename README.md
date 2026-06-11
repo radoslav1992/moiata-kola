@@ -8,8 +8,7 @@
 - **Astro 6** — статични страници + on-demand API маршрути
 - **Tailwind CSS 4** (PostCSS плъгин) — дизайн системата живее в `src/styles/global.css`
 - **Шрифтове:** Inter (целият сайт) + Oswald (само табелата и големите статусни числа)
-- **Продукционна цел: Cloudflare** — build с `DEPLOY_TARGET=cloudflare npm run build`
-  (локално и в CI се ползва Node адаптерът, защото workerd изисква мрежа на Cloudflare при build)
+- **Продукционна цел: Cloudflare Workers** (виж „Деплой“ по-долу)
 
 ## Команди
 
@@ -20,6 +19,28 @@ npm run build      # производствен build в dist/
 node dist/server/entry.mjs   # стартиране на Node build-а
 npm run check      # astro check (типове)
 ```
+
+## Деплой на Cloudflare Workers
+
+Конфигурацията е в `wrangler.jsonc` (адаптерът на Astro я допълва при build с worker
+entry и assets binding). В Cloudflare → Workers → *Create* → свържете GitHub репото и задайте:
+
+| Настройка | Стойност |
+|---|---|
+| Build command | `npm run build:cloudflare` |
+| Deploy command | `npx wrangler deploy` |
+
+Ключовото е `DEPLOY_TARGET=cloudflare` (скриптът `build:cloudflare` го задава) — без него
+build-ът е за Node адаптера и `wrangler deploy` няма да намери worker entry-то
+(грешка „The entry-point file at @astrojs/cloudflare/entrypoints/server was not found“).
+
+Локален деплой от машина: `npm run build:cloudflare && npx wrangler deploy`.
+
+Бележки:
+- Сесии не се ползват (`session: null` драйвер) → не е нужен SESSION KV namespace;
+- `imageService: "compile"` → не е нужен IMAGES binding;
+- Cloudflare build-ът изисква изходяща мрежа (workerd тегли конфигурация от Cloudflare),
+  затова в офлайн среди се ползва `npm run build` (Node адаптер).
 
 ## Архитектура
 
