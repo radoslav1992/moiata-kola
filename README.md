@@ -86,14 +86,19 @@ npx wrangler kv namespace create CHECK_CACHE
 | `src/components/PlateCheck.astro` | Подписният елемент — входът като регистрационна табела |
 | `src/content/statii/` | Статиите (Markdown + FAQ в frontmatter → FAQPage schema) |
 
-### Статус на интеграциите
+### Статус на интеграциите (верифициран 11.06.2026 с реални browser traces)
 
-- **Винетка (БГ ТОЛ):** реална интеграция срещу публичния endpoint на check.bgtoll.bg,
-  с 2-минутен кеш и автоматичен fallback към насочен линк при недостъпност.
-  *Първа задача преди launch: верифицирайте endpoint-а от реална мрежа (тази среда няма изходяща връзка).*
-- **ГО (Гаранционен фонд)** и **ГТП (ИААА):** официалните справки са зад captcha → стратегия
-  „guided deep-link“ (точни стъпки + дълбок линк). Адаптерите имат същия интерфейс,
-  така че реална интеграция е drop-in промяна само в `src/lib/checks/`.
+- **Винетка (БГ ТОЛ): ✅ работи на продукция.**
+  `GET https://check.bgtoll.bg/check/vignette/plate/BG/{номер}` (номер без интервали също се приема).
+  2-минутен кеш, fallback с поле `reason` за диагностика. Бележка: check.bgtoll.bg връща 403
+  на datacenter/non-browser клиенти извън БГ, но fetch от Cloudflare Workers минава.
+- **ГТП (ИААА): captcha.** Endpoint: `POST rta.government.bg/services/check-inspection/checkinsp.php`
+  с полета `regNum` + `captcha` → програмна интеграция блокирана (captcha не се заобикаля).
+  Стратегия: guided deep-link + автоматично копиране на номера в клипборда.
+  Път напред: официално искане за достъп към ИААА или партньор с данни.
+- **ГО (Гаранционен фонд): captcha** (графичен код за сигурност в eisoukr.guaranteefund.org).
+  Същата guided deep-link стратегия. Път напред: брокерско партньорство (Boleron/SDI/insurance.bg
+  имат легален ЕИСОУКР достъп) — естествено върви заедно с ГО affiliate сделката от плана.
 - **Глоби (КАТ):** изискват ЕГН + документ → нарочно guide-страница без вход за данни (`/globi/proverka`).
 
 ### SEO/GEO

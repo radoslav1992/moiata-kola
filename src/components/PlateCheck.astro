@@ -89,7 +89,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
     return `<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${cls}">${text}</span>`;
   }
 
-  function renderResult(r: CheckResult): string {
+  function renderResult(r: CheckResult, plate: string): string {
     const head = `<p class="text-sm font-medium text-ink-soft">${LABELS[r.kind]}</p>`;
 
     if (r.status === "ok" && r.valid) {
@@ -131,9 +131,10 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
         <div class="card border-l-4 border-l-line-strong p-4 sm:p-5">
           ${head}
           <p class="mt-1.5 text-sm leading-relaxed text-ink-soft">${esc(r.note)}</p>
-          <a href="${r.officialUrl}" target="_blank" rel="nofollow noopener" class="btn-secondary mt-3 w-full sm:w-auto">
+          <a href="${r.officialUrl}" target="_blank" rel="nofollow noopener" data-copy-plate="${esc(plate)}" class="btn-secondary mt-3 w-full sm:w-auto">
             Официална проверка ↗
           </a>
+          <p class="mt-2 text-xs text-ink-faint" data-copy-hint>При отваряне номерът се копира автоматично — поставете го във формата.</p>
         </div>`;
     }
 
@@ -201,18 +202,21 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
             const res = await fetch(`/api/check/${kind}?plate=${encodeURIComponent(plate)}`);
             const body = (await res.json()) as CheckResult | { message?: string };
             if (!res.ok) throw new Error((body as { message?: string }).message);
-            html = renderResult(body as CheckResult);
+            html = renderResult(body as CheckResult, plate);
           } catch (err) {
-            html = renderResult({
-              kind,
-              status: "error",
-              message:
-                err instanceof Error && err.message
-                  ? err.message
-                  : "Проверката е временно недостъпна. Опитайте отново след малко.",
-              officialUrl: "",
-              checkedAt: new Date().toISOString(),
-            });
+            html = renderResult(
+              {
+                kind,
+                status: "error",
+                message:
+                  err instanceof Error && err.message
+                    ? err.message
+                    : "Проверката е временно недостъпна. Опитайте отново след малко.",
+                officialUrl: "",
+                checkedAt: new Date().toISOString(),
+              },
+              plate,
+            );
           }
           const slot = resultsEl.querySelector(`[data-skeleton="${kind}"]`);
           if (slot) slot.outerHTML = html;
@@ -222,6 +226,17 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
       const now = new Date().toLocaleTimeString("bg-BG", { hour: "2-digit", minute: "2-digit" });
       timestampEl.textContent = `Проверено в ${now} ч. · данни от официалните системи`;
       timestampEl.hidden = false;
+    });
+
+    // Към официална проверка → номерът отива в клипборда, потребителят само го поставя
+    resultsEl.addEventListener("click", (e) => {
+      const link = (e.target as HTMLElement).closest<HTMLElement>("[data-copy-plate]");
+      const value = link?.dataset.copyPlate;
+      if (!value) return;
+      navigator.clipboard?.writeText(value).then(() => {
+        const hint = link!.parentElement?.querySelector("[data-copy-hint]");
+        if (hint) hint.textContent = `Номер ${value} е копиран — поставете го във формата (Ctrl+V).`;
+      });
     });
 
     // Отворен споделен линк (?plate=…) → проверката тръгва сама, без клик
