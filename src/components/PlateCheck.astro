@@ -104,7 +104,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
     if (r.status === "ok" && r.valid) {
       const expiring = r.daysLeft !== undefined && r.daysLeft <= 7;
       return `
-        <div class="card flex items-center justify-between gap-4 border-l-4 ${expiring ? "border-l-warn" : "border-l-ok"} p-4 sm:p-5">
+        <div class="card flex items-center justify-between gap-4 border-l-4 ${expiring ? "border-l-warn" : "border-l-ok"} p-4 sm:p-5" data-card="${r.kind}">
           <div class="min-w-0">
             ${head}
             <div class="mt-1.5 flex flex-wrap items-center gap-2">
@@ -128,7 +128,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
     if (r.status === "ok" && !r.valid) {
       const cta = INVALID_CTA[r.kind];
       return `
-        <div class="card border-l-4 border-l-bad p-4 sm:p-5">
+        <div class="card border-l-4 border-l-bad p-4 sm:p-5" data-card="${r.kind}">
           ${head}
           <div class="mt-1.5">${pill("bg-bad-soft text-bad", "Не е намерена валидна")}</div>
           <a href="${cta.href}" class="btn-primary mt-3 w-full sm:w-auto">${cta.label}</a>
@@ -137,25 +137,29 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
 
     if (r.status === "manual") {
       return `
-        <div class="card border-l-4 border-l-line-strong p-4 sm:p-5">
+        <div class="card border-l-4 border-l-line-strong p-4 sm:p-5" data-card="${r.kind}">
           ${head}
           <p class="mt-1.5 text-sm leading-relaxed text-ink-soft">${esc(r.note)}</p>
-          <a href="${r.officialUrl}" target="_blank" rel="nofollow noopener" data-copy-plate="${esc(plate)}" class="btn-secondary mt-3 w-full sm:w-auto">
-            Официална проверка ↗
-          </a>
+          <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+            <button type="button" data-retry="${r.kind}" class="btn-primary">Опитай отново</button>
+            <a href="${r.officialUrl}" target="_blank" rel="nofollow noopener" data-copy-plate="${esc(plate)}" class="btn-secondary">
+              Официална проверка ↗
+            </a>
+          </div>
           <p class="mt-2 text-xs text-ink-faint" data-copy-hint>При отваряне номерът се копира автоматично — поставете го във формата.</p>
         </div>`;
     }
 
     return `
-      <div class="card border-l-4 border-l-line-strong p-4 sm:p-5">
+      <div class="card border-l-4 border-l-line-strong p-4 sm:p-5" data-card="${r.kind}">
         ${head}
         <p class="mt-1.5 text-sm text-ink-soft">${esc(r.status === "error" ? r.message : "Проверката е временно недостъпна.")}</p>
+        <button type="button" data-retry="${r.kind}" class="btn-secondary mt-3 w-full sm:w-auto">Опитай отново</button>
       </div>`;
   }
 
   const skeleton = (kind: CheckKind) => `
-    <div class="card animate-pulse p-4 sm:p-5" data-skeleton="${kind}">
+    <div class="card animate-pulse p-4 sm:p-5" data-card="${kind}">
       <p class="text-sm font-medium text-ink-soft">${LABELS[kind]}</p>
       <div class="mt-3 h-5 w-32 rounded-full bg-canvas"></div>
       <div class="mt-2 h-4 w-48 rounded bg-canvas"></div>
@@ -177,6 +181,57 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
     const timestampEl = root.querySelector<HTMLElement>("[data-timestamp]")!;
     const kinds = (root.dataset.checks ?? "").split(",") as CheckKind[];
     const rtaUrl = root.dataset.rta ?? "";
+    let lastPlate = "";
+
+    const setCard = (kind: CheckKind, html: string) => {
+      const el = resultsEl.querySelector(`[data-card="${kind}"]`);
+      if (el) el.outerHTML = html;
+    };
+
+    /** Стандартна проверка (винетка/ГО) за един вид — ползва се и при retry. */
+    async function runStandard(kind: CheckKind, plate: string): Promise<string> {
+      try {
+        const res = await fetch(`/api/check/${kind}?plate=${encodeURIComponent(plate)}`);
+        const body = (await res.json()) as CheckResult | { message?: string };
+        if (!res.ok) throw new Error((body as { message?: string }).message);
+        return renderResult(body as CheckResult, plate);
+      } catch (err) {
+        return renderResult(
+          {
+            kind,
+            status: "error",
+            message:
+              err instanceof Error && err.message
+                ? err.message
+                : "Проверката е временно недостъпна. Опитайте отново след малко.",
+            officialUrl: "",
+            checkedAt: new Date().toISOString(),
+          },
+          plate,
+        );
+      }
+    }
+
+    /** Стартира ГТП relay в свеж контейнер на мястото на текущата ГТП карта. */
+    function startInspection(plate: string) {
+      const el = resultsEl.querySelector(`[data-card="inspection"]`);
+      if (!el) return;
+      const container = document.createElement("div");
+      container.dataset.card = "inspection";
+      el.replaceWith(container);
+      mountGtp(container, plate, rtaUrl);
+    }
+
+    /** Повтаря само една проверка (от бутона „Опитай отново“). */
+    async function retryKind(kind: CheckKind) {
+      if (!isValidBgPlate(lastPlate)) return;
+      if (kind === "inspection") {
+        startInspection(lastPlate);
+        return;
+      }
+      setCard(kind, skeleton(kind));
+      setCard(kind, await runStandard(kind, lastPlate));
+    }
 
     // Предпопълване: ?plate= от URL (споделен линк) или последният проверен номер
     const initialPlate = isValidBgPlate(urlPlate)
@@ -197,6 +252,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
       }
       errorEl.hidden = true;
       timestampEl.hidden = true;
+      lastPlate = plate;
       resultsEl.innerHTML = kinds.map(skeleton).join("");
 
       // Запомняме номера и правим резултата споделяем/bookmark-ваем
@@ -210,38 +266,10 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
           // ГТП минава през relay (captcha се решава от потребителя в самата карта),
           // а не през /api/check/inspection — затова бързите проверки не чакат кода.
           if (kind === "inspection") {
-            const slot = resultsEl.querySelector(`[data-skeleton="inspection"]`);
-            if (slot) {
-              const container = document.createElement("div");
-              slot.replaceWith(container);
-              mountGtp(container, plate, rtaUrl);
-            }
+            startInspection(plate);
             return;
           }
-
-          let html: string;
-          try {
-            const res = await fetch(`/api/check/${kind}?plate=${encodeURIComponent(plate)}`);
-            const body = (await res.json()) as CheckResult | { message?: string };
-            if (!res.ok) throw new Error((body as { message?: string }).message);
-            html = renderResult(body as CheckResult, plate);
-          } catch (err) {
-            html = renderResult(
-              {
-                kind,
-                status: "error",
-                message:
-                  err instanceof Error && err.message
-                    ? err.message
-                    : "Проверката е временно недостъпна. Опитайте отново след малко.",
-                officialUrl: "",
-                checkedAt: new Date().toISOString(),
-              },
-              plate,
-            );
-          }
-          const slot = resultsEl.querySelector(`[data-skeleton="${kind}"]`);
-          if (slot) slot.outerHTML = html;
+          setCard(kind, await runStandard(kind, plate));
         }),
       );
 
@@ -250,13 +278,22 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
       timestampEl.hidden = false;
     });
 
-    // Към официална проверка → номерът отива в клипборда, потребителят само го поставя
     resultsEl.addEventListener("click", (e) => {
-      const link = (e.target as HTMLElement).closest<HTMLElement>("[data-copy-plate]");
+      const target = e.target as HTMLElement;
+
+      // „Опитай отново“ → повтаря само тази проверка
+      const retry = target.closest<HTMLElement>("[data-retry]");
+      if (retry) {
+        void retryKind(retry.dataset.retry as CheckKind);
+        return;
+      }
+
+      // Към официална проверка → номерът отива в клипборда, потребителят само го поставя
+      const link = target.closest<HTMLElement>("[data-copy-plate]");
       const value = link?.dataset.copyPlate;
       if (!value) return;
       navigator.clipboard?.writeText(value).then(() => {
-        const hint = link!.parentElement?.querySelector("[data-copy-hint]");
+        const hint = link!.parentElement?.parentElement?.querySelector("[data-copy-hint]");
         if (hint) hint.textContent = `Номер ${value} е копиран — поставете го във формата (Ctrl+V).`;
       });
     });

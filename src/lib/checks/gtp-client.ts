@@ -51,7 +51,10 @@ function fallbackCard(officialUrl: string, note: string): string {
     <div class="card border-l-4 border-l-line-strong p-4 sm:p-5">
       ${head}
       <p class="mt-1.5 text-sm leading-relaxed text-ink-soft">${esc(note)}</p>
-      <a href="${esc(officialUrl)}" target="_blank" rel="nofollow noopener" class="btn-secondary mt-3 w-full sm:w-auto">Официална проверка ↗</a>
+      <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+        <button type="button" class="btn-primary" data-gtp-retry>Опитай отново</button>
+        <a href="${esc(officialUrl)}" target="_blank" rel="nofollow noopener" class="btn-secondary">Официална проверка ↗</a>
+      </div>
     </div>`;
 }
 
@@ -84,6 +87,15 @@ export function mountGtp(container: HTMLElement, plate: string, officialUrl: str
   container.innerHTML = loadingCard();
   void loadCaptcha();
 
+  /** Показва fallback карта и закача бутона „Опитай отново“ за нов опит. */
+  function showFallback(note: string) {
+    container.innerHTML = fallbackCard(officialUrl, note);
+    container.querySelector<HTMLButtonElement>("[data-gtp-retry]")?.addEventListener("click", () => {
+      container.innerHTML = loadingCard();
+      void loadCaptcha();
+    });
+  }
+
   async function loadCaptcha() {
     try {
       const res = await fetch("/api/gtp/captcha");
@@ -105,8 +117,7 @@ export function mountGtp(container: HTMLElement, plate: string, officialUrl: str
       });
       refresh.addEventListener("click", () => void loadCaptcha());
     } catch {
-      container.innerHTML = fallbackCard(
-        officialUrl,
+      showFallback(
         "Връзката със системата на ИААА е временно недостъпна. Проверете директно в официалната система — отнема под минута.",
       );
     }
@@ -143,18 +154,14 @@ export function mountGtp(container: HTMLElement, plate: string, officialUrl: str
         return;
       }
       if (r.status === "not_found") {
-        container.innerHTML = fallbackCard(
-          officialUrl,
+        showFallback(
           "За този номер не е намерен валиден технически преглед. Проверете номера или вижте директно в официалната система.",
         );
         return;
       }
-      container.innerHTML = fallbackCard(
-        officialUrl,
-        "Проверката през ИААА е временно недостъпна. Проверете директно в официалната система.",
-      );
+      showFallback("Проверката през ИААА е временно недостъпна. Проверете директно в официалната система.");
     } catch {
-      container.innerHTML = fallbackCard(officialUrl, "Проверката е временно недостъпна. Опитайте отново след малко.");
+      showFallback("Проверката е временно недостъпна. Опитайте отново след малко.");
     }
   }
 }
