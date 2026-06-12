@@ -1,0 +1,62 @@
+{
+ "newVsUsed": {
+  "novi": 29516,
+  "upotrebyavani": 110165
+ },
+ "carsNewVsUsed": {
+  "novi": 20504,
+  "upotrebyavani": 87111
+ },
+ "topNewCarBrands": [
+  {
+   "brand": "ТОЙОТА",
+   "count": 2273
+  },
+  {
+   "brand": "ШКОДА",
+   "count": 2245
+  },
+  {
+   "brand": "ХЮНДАЙ",
+   "count": 1621
+  },
+  {
+   "brand": "ФОЛКСВАГЕН",
+   "count": 1518
+  },
+  {
+   "brand": "ДАЧИЯ",
+   "count": 1468
+  },
+  {
+   "brand": "РЕНО",
+   "count": 1293
+  },
+  {
+   "brand": "КИА",
+   "count": 1130
+  },
+  {
+   "brand": "СИТРОЕН",
+   "count": 924
+  },
+  {
+   "brand": "БМВ",
+   "count": 854
+  },
+  {
+   "brand": "МЕРЦЕДЕС",
+   "count": 708
+  }
+ ],
+ "hybrids": {
+  "total": 24630,
+  "byClass": {
+   "NOVC-HEV": 10279,
+   "OVC-FCHV": 9,
+   "OVC-HEV": 2020,
+   "NOVC-FCHV": 7,
+   "БЕЗ КЛАС": 12315
+  }
+ }
+}

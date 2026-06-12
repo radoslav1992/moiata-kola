@@ -53,6 +53,7 @@
 
 ## За сайта
 
+- [Автомобилна статистика на България](https://ponomer.com/statistika): възраст на автопарка, марки, горива и електромобили — месечни данни от МВР
 - [За проекта](https://ponomer.com/za-proekta): кой и защо прави „По номер“
 - [Поверителност](https://ponomer.com/poveritelnost): не съхраняваме регистрационни номера и лични данни
 - [Контакти](https://ponomer.com/kontakti): kontakt@ponomer.com

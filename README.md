@@ -59,9 +59,16 @@ npx wrangler kv namespace create CHECK_CACHE
 
 Два слоя с различни архитектури — само вторият докосва Worker-а:
 
-1. **МВР данни** (възраст на автопарка, марки, горива) — изцяло build-time:
-   месечен GitHub Action → нормализиран JSON в репото → Astro rebuild на
-   бъдещата /statistika. Този слой нарочно НЕ влиза в runtime.
+1. **МВР данни** (възраст на автопарка, марки, горива) — изцяло build-time
+   и вече реализиран: месечният zip от data.egov.bg стои в `data/mvr-raw/`
+   (ГГГГ-ММ.zip), `npm run stats:build` го нормализира до компактни JSON-и
+   в `src/data/statistika/`, а страницата `/statistika` се рендерира от тях
+   при build. Суровите CSV-та не влизат в bundle-а. Месечният workflow
+   `.github/workflows/statistika.yml` опитва автоматично сваляне (URL в
+   repo variable `MVR_STATS_URL`) и отваря PR; при блокиран достъп отваря
+   issue за 2-минутната ръчна стъпка. Бележка: файлове 12–21 от архива
+   броят всички издадени СРМПС (вкл. препродажби) — не ги ползваме.
+   Този слой нарочно НЕ влиза в runtime.
 2. **Собствени данни от проверките** — Worker-ът пише по един fire-and-forget
    ред след всяка завършена проверка в Analytics Engine (binding `CHECK_STATS`,
    dataset `check_stats`): вид, изход (valid/invalid/expiring/upstream-error),
