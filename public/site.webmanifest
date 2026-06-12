@@ -1,0 +1,36 @@
+{
+  "name": "По номер — проверка на винетка, ГО и ГТП",
+  "short_name": "По номер",
+  "description": "Безплатна проверка на винетка, Гражданска отговорност и ГТП по регистрационен номер — за 10 секунди, без регистрация.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "bg",
+  "dir": "ltr",
+  "background_color": "#f7f9fb",
+  "theme_color": "#f7f9fb",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Проверка на винетка",
+      "url": "/vinetka/proverka?source=pwa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Гражданска отговорност",
+      "url": "/grazhdanska-otgovornost/proverka?source=pwa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Проверка на ГТП",
+      "url": "/gtp/proverka?source=pwa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

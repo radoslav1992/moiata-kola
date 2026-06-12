@@ -128,7 +128,8 @@ const datasetSchema = {
 
     <details class="card mt-4 px-6 py-4">
       <summary class="cursor-pointer text-sm font-medium text-ink">Всички области — средна възраст и дял на колите над 15 г.</summary>
-      <table class="mt-4 w-full text-sm">
+      <div class="overflow-x-auto">
+      <table class="mt-4 w-full min-w-[26rem] text-sm">
         <thead>
           <tr class="text-left text-xs text-ink-faint">
             <th class="pb-2 font-medium">Област</th>
@@ -148,6 +149,7 @@ const datasetSchema = {
           ))}
         </tbody>
       </table>
+      </div>
     </details>
   </section>
 
