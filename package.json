@@ -10,7 +10,7 @@
     "build:cloudflare": "DEPLOY_TARGET=cloudflare astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "stats:build": "node scripts/statistika/normalize.mjs"
+    "stats:build": "node scripts/statistika/normalize.mjs && node scripts/statistika/og.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",
