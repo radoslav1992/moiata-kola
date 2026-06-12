@@ -13,7 +13,7 @@ const MONTHS = ["януари", "февруари", "март", "април", "�
 const asOf = `1 ${MONTHS[Number(monthNum) - 1]} ${year} г.`;
 
 const title = `Автомобилна статистика на България ${year} — възраст, марки, горива | По номер`;
-const description = `Колко коли има в България, на колко години са и какво карат българите: ${fmt(fleet.carsTotal)} леки автомобила, ${age.national.over15Share}% от тях на над 15 години. Данни от отворените данни на МВР, обновявани месечно.`;
+const description = `Колко коли има в България, на колко години са и какво карат българите: ${fmt(fleet.carsTotal)} леки автомобила, ${age.national.over15Share}% от тях по-стари от 15 години. По данни на МВР, обновявани всеки месец.`;
 
 const carsUsedShare = Math.round((ytd.carsNewVsUsed.upotrebyavani / (ytd.carsNewVsUsed.novi + ytd.carsNewVsUsed.upotrebyavani)) * 100);
 const oldest = age.regions.slice(0, 5);
@@ -50,7 +50,7 @@ const datasetSchema = {
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div class="card p-5 text-center">
         <p class="font-plate text-3xl font-semibold text-ink sm:text-4xl">{fmt(fleet.totals.allVehicles)}</p>
-        <p class="mt-1 text-sm text-ink-soft">превозни средства на отчет</p>
+        <p class="mt-1 text-sm text-ink-soft">регистрирани превозни средства</p>
       </div>
       <div class="card p-5 text-center">
         <p class="font-plate text-3xl font-semibold text-ink sm:text-4xl">{fmt(fleet.carsTotal)}</p>
@@ -62,7 +62,7 @@ const datasetSchema = {
       </div>
       <div class="card p-5 text-center">
         <p class="font-plate text-3xl font-semibold text-warn sm:text-4xl">{age.national.over15Share}%</p>
-        <p class="mt-1 text-sm text-ink-soft">от леките коли са на над 15 години</p>
+        <p class="mt-1 text-sm text-ink-soft">от леките коли са по-стари от 15 години</p>
       </div>
     </div>
   </section>
@@ -96,7 +96,7 @@ const datasetSchema = {
 
   <!-- Възраст по области -->
   <section class="mx-auto max-w-3xl px-4 pt-12 sm:px-6">
-    <h2 class="text-2xl">Къде е най-стар автопаркът</h2>
+    <h2 class="text-2xl">Къде са най-старите коли</h2>
     <div class="mt-5 grid gap-4 sm:grid-cols-2">
       <div class="card p-6">
         <p class="text-sm font-semibold text-ink">Най-стари коли</p>
@@ -112,7 +112,7 @@ const datasetSchema = {
         </table>
       </div>
       <div class="card p-6">
-        <p class="text-sm font-semibold text-ink">Най-млади коли</p>
+        <p class="text-sm font-semibold text-ink">Най-нови коли</p>
         <table class="mt-3 w-full text-sm">
           <tbody>
             {youngest.map((r) => (
@@ -200,12 +200,13 @@ const datasetSchema = {
       <ul class="mt-2 list-disc space-y-1.5 pl-5">
         <li>
           Източник: <a href={meta.sourceUrl} rel="nofollow noopener" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">отворените данни на МВР</a>
-          за регистрираните превозни средства, снимка към {asOf}. Обновяваме при всяко месечно издание.
+          за регистрираните превозни средства, актуални към {asOf}. Обновяваме страницата всеки месец, щом
+          МВР публикува новите данни.
         </li>
         <li>
-          „Средна възраст“ е <strong>оценка</strong>: МВР публикува възрастта в интервали (0–5, 6–10, 11–15,
-          15–20, над 20 г.) и ние смятаме претеглена средна по средните точки на интервалите, като за „над 20“
-          приемаме 25 г. Делът на колите над 15 години е точен, без допускания.
+          „Средна възраст“ е <strong>оценка</strong>: МВР дава възрастта в групи (0–5, 6–10, 11–15, 15–20,
+          над 20 г.), затова смятаме средната от средите на групите, а за „над 20“ приемаме 25 г. Делът на
+          колите над 15 години е точно число, без допускания.
         </li>
         <li>
           Броим само леки автомобили (категория M1) за възрастта и горивата; „регистрации“ означава първоначална
