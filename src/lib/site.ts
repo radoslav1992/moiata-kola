@@ -49,6 +49,7 @@ export const NAV_LINKS = [
   { href: "/gtp/proverka", label: "ГТП" },
   { href: "/globi/proverka", label: "Глоби" },
   { href: "/vinetka/ceni", label: "Цени" },
+  { href: "/statistika", label: "Статистика" },
   { href: "/statii", label: "Статии" },
 ] as const;
 
