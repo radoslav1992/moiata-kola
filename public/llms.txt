@@ -53,6 +53,6 @@
 
 ## За сайта
 
-- [За проекта](https://ponomer.com/za-proekta): кой и защо прави По номер
+- [За проекта](https://ponomer.com/za-proekta): кой и защо прави „По номер“
 - [Поверителност](https://ponomer.com/poveritelnost): не съхраняваме регистрационни номера и лични данни
 - [Контакти](https://ponomer.com/kontakti): kontakt@ponomer.com
