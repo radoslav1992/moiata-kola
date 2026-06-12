@@ -14,6 +14,8 @@ interface Props {
   publishedTime?: string;
   modifiedTime?: string;
   noindex?: boolean;
+  /** Път до OG картата на страницата, ако не е общата (напр. "/og-statistika.png") */
+  ogImagePath?: string;
 }
 
 const {
@@ -24,10 +26,11 @@ const {
   publishedTime,
   modifiedTime,
   noindex = false,
+  ogImagePath = "/og-default.png",
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, "") || Astro.site?.href;
-const ogImage = new URL("/og-default.png", Astro.site).href;
+const ogImage = new URL(ogImagePath, Astro.site).href;
 
 const baseSchema = [
   {

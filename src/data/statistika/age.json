@@ -2,7 +2,7 @@
  "national": {
   "total": 3273585,
   "over15Share": 76,
-  "estMeanAge": 19.5,
+  "estMeanAge": 19.6,
   "buckets": {
    "0-5 год.": 204393,
    "6-10 год.": 252105,
@@ -16,169 +16,169 @@
    "region": "МОНТАНА",
    "total": 53968,
    "over15Share": 89.9,
-   "estMeanAge": 22.1
+   "estMeanAge": 22.2
   },
   {
    "region": "ВИДИН",
    "total": 40240,
    "over15Share": 89.6,
-   "estMeanAge": 21.9
+   "estMeanAge": 22.1
   },
   {
    "region": "ТЪРГОВИЩЕ",
    "total": 42899,
    "over15Share": 87.3,
-   "estMeanAge": 21.7
+   "estMeanAge": 21.8
   },
   {
    "region": "СИЛИСТРА",
    "total": 44550,
    "over15Share": 87.6,
-   "estMeanAge": 21.6
+   "estMeanAge": 21.7
   },
   {
    "region": "ЛОВЕЧ",
    "total": 57170,
    "over15Share": 86.6,
-   "estMeanAge": 21.5
+   "estMeanAge": 21.6
   },
   {
    "region": "СМОЛЯН",
    "total": 45519,
    "over15Share": 87.1,
-   "estMeanAge": 21.5
+   "estMeanAge": 21.6
   },
   {
    "region": "ДОБРИЧ",
    "total": 73601,
    "over15Share": 85.9,
-   "estMeanAge": 21.4
+   "estMeanAge": 21.5
   },
   {
    "region": "РАЗГРАД",
    "total": 47457,
    "over15Share": 85.9,
-   "estMeanAge": 21.3
+   "estMeanAge": 21.4
   },
   {
    "region": "ХАСКОВО",
    "total": 101653,
    "over15Share": 85.1,
-   "estMeanAge": 21.2
+   "estMeanAge": 21.3
   },
   {
    "region": "ВРАЦА",
    "total": 74102,
    "over15Share": 85.4,
-   "estMeanAge": 21.2
+   "estMeanAge": 21.3
   },
   {
    "region": "СЛИВЕН",
    "total": 72834,
    "over15Share": 84.8,
-   "estMeanAge": 21.2
+   "estMeanAge": 21.3
   },
   {
    "region": "КЮСТЕНДИЛ",
    "total": 62294,
    "over15Share": 85.2,
-   "estMeanAge": 21.2
+   "estMeanAge": 21.3
   },
   {
    "region": "ЯМБОЛ",
    "total": 48646,
    "over15Share": 85.1,
-   "estMeanAge": 21.2
+   "estMeanAge": 21.3
   },
   {
    "region": "ШУМЕН",
    "total": 69097,
    "over15Share": 84.7,
-   "estMeanAge": 21.1
+   "estMeanAge": 21.2
   },
   {
    "region": "КЪРДЖАЛИ",
    "total": 58600,
    "over15Share": 84.9,
-   "estMeanAge": 21.1
+   "estMeanAge": 21.2
   },
   {
    "region": "ПАЗАРДЖИК",
    "total": 110510,
    "over15Share": 84.7,
-   "estMeanAge": 21.1
+   "estMeanAge": 21.2
   },
   {
    "region": "СОФИЯ-ОКРЪГ",
    "total": 108904,
    "over15Share": 84.6,
-   "estMeanAge": 21.1
+   "estMeanAge": 21.2
   },
   {
    "region": "ПЛЕВЕН",
    "total": 100036,
    "over15Share": 83.4,
-   "estMeanAge": 20.9
+   "estMeanAge": 21
   },
   {
    "region": "ПЕРНИК",
    "total": 62689,
    "over15Share": 83.8,
-   "estMeanAge": 20.9
+   "estMeanAge": 21
   },
   {
    "region": "БЛАГОЕВГРАД",
    "total": 140869,
    "over15Share": 82.6,
-   "estMeanAge": 20.7
+   "estMeanAge": 20.8
   },
   {
    "region": "ГАБРОВО",
    "total": 52087,
    "over15Share": 81.7,
-   "estMeanAge": 20.5
+   "estMeanAge": 20.6
   },
   {
    "region": "ВЕЛИКО ТЪРНОВО",
    "total": 96211,
    "over15Share": 80.7,
-   "estMeanAge": 20.4
+   "estMeanAge": 20.5
   },
   {
    "region": "РУСЕ",
    "total": 106033,
    "over15Share": 81.1,
-   "estMeanAge": 20.4
+   "estMeanAge": 20.5
   },
   {
    "region": "СТАРА ЗАГОРА",
    "total": 142982,
    "over15Share": 80.2,
-   "estMeanAge": 20.2
+   "estMeanAge": 20.4
   },
   {
    "region": "ПЛОВДИВ",
    "total": 311324,
    "over15Share": 75.2,
-   "estMeanAge": 19.4
+   "estMeanAge": 19.5
   },
   {
    "region": "БУРГАС",
    "total": 185145,
    "over15Share": 76,
-   "estMeanAge": 19.4
+   "estMeanAge": 19.5
   },
   {
    "region": "ВАРНА",
    "total": 221764,
    "over15Share": 73.3,
-   "estMeanAge": 19
+   "estMeanAge": 19.1
   },
   {
    "region": "СОФИЯ-ГРАД",
    "total": 742401,
    "over15Share": 57,
-   "estMeanAge": 15.9
+   "estMeanAge": 16
   }
  ]
 }

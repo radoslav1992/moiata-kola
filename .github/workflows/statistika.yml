@@ -29,6 +29,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+
+      # sharp е нужен за OG картата (og.mjs); normalize.mjs е без зависимости
+      - run: npm ci
 
       - name: Опит за сваляне от data.egov.bg
         id: download
@@ -61,7 +65,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add data/mvr-raw src/data/statistika
+          git add data/mvr-raw src/data/statistika public/og-statistika.png
           git commit -m "Обновяване на статистиката (${MONTH:-ръчни данни})"
           git push -u origin "$BRANCH"
           gh pr create --fill --title "Месечна статистика: ${MONTH:-обновяване}" \
