@@ -5,6 +5,7 @@ import { checkInsurance } from "@/lib/checks/insurance";
 import { checkInspection } from "@/lib/checks/inspection";
 import { cacheGet, cachePut, type KVLike } from "@/lib/checks/cache";
 import { isRateLimited, clientIp } from "@/lib/checks/rate-limit";
+import { logCheck, outcomeOf } from "@/lib/checks/stats";
 
 export const prerender = false;
 
@@ -74,11 +75,15 @@ export const GET: APIRoute = async ({ params, url, request }) => {
   const cacheKey = `check:${kind}:${plate}`;
 
   const cached = await cacheGet(kv, cacheKey);
-  if (cached) return json(cached);
+  if (cached) {
+    void logCheck(kind, outcomeOf(cached));
+    return json(cached);
+  }
 
   const result = await handler(plate);
   if (result.status === "ok") {
     await cachePut(kv, cacheKey, result);
   }
+  void logCheck(kind, outcomeOf(result));
   return json(result);
 };

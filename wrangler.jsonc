@@ -5,7 +5,12 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "moiata-kola",
   "compatibility_date": "2026-04-15",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Анонимни агрегирани броячи на проверките (вид/изход/държава, по ден).
+  // Без номера, без IP — виж src/lib/checks/stats.ts. Dataset-ът се създава
+  // сам при първия запис; заявки: SQL през Analytics Engine API.
+  "analytics_engine_datasets": [{ "binding": "CHECK_STATS", "dataset": "check_stats" }]
 
   // Кеш на резултатите от проверки (по желание, но препоръчително в продукция).
   // Създайте namespace и разкоментирайте с реалното id:
