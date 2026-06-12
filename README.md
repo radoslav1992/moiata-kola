@@ -55,6 +55,26 @@ npx wrangler kv namespace create CHECK_CACHE
 и разкоментирайте `kv_namespaces` в `wrangler.jsonc` с върнатото id. Кодът го засича сам
 (`src/lib/checks/cache.ts`); кешират се само успешни резултати, TTL 120 s.
 
+### Статистика на проверките (Workers Analytics Engine)
+
+Два слоя с различни архитектури — само вторият докосва Worker-а:
+
+1. **МВР данни** (възраст на автопарка, марки, горива) — изцяло build-time:
+   месечен GitHub Action → нормализиран JSON в репото → Astro rebuild на
+   бъдещата /statistika. Този слой нарочно НЕ влиза в runtime.
+2. **Собствени данни от проверките** — Worker-ът пише по един fire-and-forget
+   ред след всяка завършена проверка в Analytics Engine (binding `CHECK_STATS`,
+   dataset `check_stats`): вид, изход (valid/invalid/expiring/upstream-error),
+   държава. Ден идва от timestamp-а на AE. **Не се записват номера, hash-ове,
+   IP или каквото и да е per-vehicle** — виж `src/lib/checks/stats.ts`.
+   `upstream-error` дублира като мониторинг на отказите на официалните системи.
+
+Заявки към данните: SQL през Analytics Engine API (месечният Action агрегира и
+комитва JSON до МВР файловете, двата слоя минават през един build pipeline).
+При публикуване на проценти от проверките: видима бележка, че извадката е
+самоселектирана („данните са от доброволни проверки в сайта и не са
+представителна извадка“).
+
 ### Rate limit на /api/check/*
 
 Два слоя:

@@ -1,7 +1,9 @@
 import type { APIRoute } from "astro";
 import { normalizePlate } from "@/lib/checks/types";
-import { submitCheck } from "@/lib/checks/gtp-relay";
+import { submitCheck, type GtpResult } from "@/lib/checks/gtp-relay";
 import { isRateLimited, clientIp } from "@/lib/checks/rate-limit";
+import { daysUntil } from "@/lib/checks/types";
+import { logCheck, type CheckOutcome } from "@/lib/checks/stats";
 
 export const prerender = false;
 
@@ -31,5 +33,18 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const result = await submitCheck(session, plate, captcha);
+  const outcome = gtpOutcome(result);
+  if (outcome) void logCheck("inspection", outcome);
   return json(result);
 };
+
+/** captcha_error е грешно преписан код, не завършена проверка — не се брои. */
+function gtpOutcome(result: GtpResult): CheckOutcome | undefined {
+  if (result.status === "ok") {
+    if (!result.valid) return "invalid";
+    return result.validTo && daysUntil(result.validTo) <= 7 ? "expiring" : "valid";
+  }
+  if (result.status === "not_found") return "invalid";
+  if (result.status === "error") return "upstream-error";
+  return undefined;
+}
