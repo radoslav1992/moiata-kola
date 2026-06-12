@@ -1,0 +1,83 @@
+# Месечно обновяване на /statistika от отворените данни на МВР.
+#
+# Стълба на опитите (data.egov.bg блокира част от datacenter трафика):
+#   1. Опитва да свали месечния zip директно (URL-ът се задава в
+#      repository variable MVR_STATS_URL — целият архив на dataset-а).
+#   2. Ако свалянето мине → нормализира → отваря PR с новите JSON-и.
+#   3. Ако свалянето е блокирано → отваря issue с инструкция за ръчната
+#      стъпка: сваляте zip-а, слагате го като data/mvr-raw/ГГГГ-ММ.zip
+#      и пушвате — този workflow се пуска и на ръка (workflow_dispatch)
+#      и тогава нормализира каквото намери в data/mvr-raw/.
+name: statistika
+
+on:
+  schedule:
+    - cron: "17 6 5 * *" # всяко 5-о число, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Опит за сваляне от data.egov.bg
+        id: download
+        continue-on-error: true
+        run: |
+          MONTH=$(date -u +%Y-%m)
+          if [ -z "${{ vars.MVR_STATS_URL }}" ]; then
+            echo "MVR_STATS_URL не е зададен — пропускам свалянето."
+            exit 1
+          fi
+          curl -fsSL --retry 3 --retry-delay 5 -m 120 \
+            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" \
+            -o "data/mvr-raw/${MONTH}.zip" "${{ vars.MVR_STATS_URL }}"
+          unzip -t "data/mvr-raw/${MONTH}.zip" > /dev/null
+          echo "month=${MONTH}" >> "$GITHUB_OUTPUT"
+
+      - name: Нормализиране
+        run: npm run stats:build
+
+      - name: PR с новите данни (ако има промяна)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- src/data/statistika data/mvr-raw; then
+            echo "Няма промяна в статистиката."
+            exit 0
+          fi
+          MONTH="${{ steps.download.outputs.month }}"
+          BRANCH="statistika/$(date -u +%Y-%m)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/mvr-raw src/data/statistika
+          git commit -m "Обновяване на статистиката (${MONTH:-ръчни данни})"
+          git push -u origin "$BRANCH"
+          gh pr create --fill --title "Месечна статистика: ${MONTH:-обновяване}" \
+            --body "Автоматично обновяване на /statistika от данните на МВР. Прегледайте числата на страницата преди merge."
+
+      - name: Issue при блокирано сваляне
+        if: steps.download.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXISTING=$(gh issue list --state open --search "месечният архив чака ръчно сваляне" --json number --jq length)
+          if [ "$EXISTING" -gt 0 ]; then exit 0; fi
+          gh issue create \
+            --title "Статистика: месечният архив чака ръчно сваляне" \
+            --body "Автоматичното сваляне от data.egov.bg не мина (вероятно блокиран datacenter IP). Ръчната стъпка отнема 2 минути:
+
+          1. Свалете CSV архива от https://data.egov.bg/data/view/2e634036-6ab9-4efd-bd8e-c8e14a931911
+          2. Сложете го като \`data/mvr-raw/ГГГГ-ММ.zip\`
+          3. Пуснете \`npm run stats:build\` и commit-нете промените (или пуснете workflow-а statistika на ръка след push на zip-а)."
