@@ -1,18 +1,29 @@
-# Месечно обновяване на /statistika от отворените данни на МВР.
+# Обновяване на /statistika от отворените данни на МВР.
+#
+# Пуска се седмично, а не веднъж месечно: МВР не публикува на фиксирана
+# дата, а нормализацията е идемпотентна — ако архивът съдържа същите
+# числа, normalize.mjs пази стария месец и нищо не се променя. Така
+# новите данни се хващат до седмица след публикуването им, вместо да
+# чакат следващото 5-о число.
 #
 # Стълба на опитите (data.egov.bg блокира част от datacenter трафика):
-#   1. Опитва да свали месечния zip директно (URL-ът се задава в
-#      repository variable MVR_STATS_URL — целият архив на dataset-а).
+#   1. Сваля месечния zip директно (URL-ът се задава в repository variable
+#      MVR_STATS_URL — целият архив на dataset-а). БЕЗ този variable
+#      workflow-ът не сваля нищо и само отваря issue.
 #   2. Ако свалянето мине → нормализира → отваря PR с новите JSON-и.
 #   3. Ако свалянето е блокирано → отваря issue с инструкция за ръчната
 #      стъпка: сваляте zip-а, слагате го като data/mvr-raw/ГГГГ-ММ.zip
 #      и пушвате — този workflow се пуска и на ръка (workflow_dispatch)
 #      и тогава нормализира каквото намери в data/mvr-raw/.
+#
+# Всеки отказ по веригата (липсващ URL, блокирано сваляне, отказан PR,
+# застояли данни) стига до един issue — стъпката „Сигнал при проблем“ е
+# always(), за да не остане страницата тихо стара.
 name: statistika
 
 on:
   schedule:
-    - cron: "17 6 5 * *" # всяко 5-о число, 06:17 UTC
+    - cron: "17 6 * * 1" # всеки понеделник, 06:17 UTC
   workflow_dispatch:
 
 permissions:
@@ -37,51 +48,128 @@ jobs:
       - name: Опит за сваляне от data.egov.bg
         id: download
         continue-on-error: true
+        env:
+          MVR_STATS_URL: ${{ vars.MVR_STATS_URL }}
         run: |
           MONTH=$(date -u +%Y-%m)
-          if [ -z "${{ vars.MVR_STATS_URL }}" ]; then
-            echo "MVR_STATS_URL не е зададен — пропускам свалянето."
+          TARGET="data/mvr-raw/${MONTH}.zip"
+          if [ -z "$MVR_STATS_URL" ]; then
+            echo "reason=Не е зададен repository variable **MVR_STATS_URL** (Settings → Secrets and variables → Actions → Variables) с прекия линк към zip архива на dataset-а. Докато го няма, автоматичното сваляне изобщо не се опитва." >> "$GITHUB_OUTPUT"
+            echo "MVR_STATS_URL не е зададен — няма какво да се свали."
             exit 1
           fi
-          curl -fsSL --retry 3 --retry-delay 5 -m 120 \
-            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" \
-            -o "data/mvr-raw/${MONTH}.zip" "${{ vars.MVR_STATS_URL }}"
-          unzip -t "data/mvr-raw/${MONTH}.zip" > /dev/null
+          # --remove-on-error + rm: да не остане половин или HTML файл, който
+          # normalize.mjs после ще вземе за „най-новия архив“ и ще гръмне.
+          if ! curl -fsSL --retry 3 --retry-delay 5 -m 300 --remove-on-error \
+                 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" \
+                 -o "$TARGET" "$MVR_STATS_URL"; then
+            rm -f "$TARGET"
+            echo "reason=Свалянето от data.egov.bg не мина — най-вероятно блокиран datacenter IP или сменен URL в MVR_STATS_URL." >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          if ! unzip -t "$TARGET" > /dev/null 2>&1; then
+            rm -f "$TARGET"
+            echo "reason=Свалянето мина, но файлът не е валиден zip (по-вероятно HTML страница с капча или грешка от портала)." >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
           echo "month=${MONTH}" >> "$GITHUB_OUTPUT"
 
       - name: Нормализиране
         run: npm run stats:build
 
-      - name: PR с новите данни (ако има промяна)
+      # Решава се само по изхода в src/data/statistika: ако МВР е дал същия
+      # архив под ново име, JSON-ите не мърдат (normalize.mjs пази месеца по
+      # хеш) и свалянето се изхвърля, вместо да носим 2 MB дубликат в git.
+      - name: Има ли нови данни
+        id: change
+        run: |
+          git add -A src/data/statistika
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Няма нови данни — архивът на МВР съдържа същите числа."
+            git restore --staged src/data/statistika
+            git checkout -- src/data/statistika public/og-statistika.png
+            git clean -fq data/mvr-raw
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: PR с новите данни
+        id: pr
+        if: steps.change.outputs.changed == 'true'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- src/data/statistika data/mvr-raw; then
-            echo "Няма промяна в статистиката."
-            exit 0
-          fi
-          MONTH="${{ steps.download.outputs.month }}"
-          BRANCH="statistika/$(date -u +%Y-%m)"
+          MONTH=$(node -p "require('./src/data/statistika/meta.json').month")
+          BRANCH="statistika/${MONTH}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add data/mvr-raw src/data/statistika public/og-statistika.png
-          git commit -m "Обновяване на статистиката (${MONTH:-ръчни данни})"
-          git push -u origin "$BRANCH"
-          gh pr create --fill --title "Месечна статистика: ${MONTH:-обновяване}" \
-            --body "Автоматично обновяване на /statistika от данните на МВР. Прегледайте числата на страницата преди merge."
+          git commit -m "Обновяване на статистиката (${MONTH})"
+          git push -u --force origin "$BRANCH"
+          if gh pr create --title "Месечна статистика: ${MONTH}" \
+               --body "Автоматично обновяване на /statistika от данните на МВР. Прегледайте числата на страницата преди merge."; then
+            echo "opened=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "opened=false" >> "$GITHUB_OUTPUT"
+            echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+            echo "Клонът е пушнат, но PR не можа да се отвори."
+            exit 1
+          fi
 
-      - name: Issue при блокирано сваляне
-        if: steps.download.outcome == 'failure'
+      - name: Сигнал при проблем
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
+          DOWNLOAD_REASON: ${{ steps.download.outputs.reason }}
         run: |
-          EXISTING=$(gh issue list --state open --search "месечният архив чака ръчно сваляне" --json number --jq length)
-          if [ "$EXISTING" -gt 0 ]; then exit 0; fi
-          gh issue create \
-            --title "Статистика: месечният архив чака ръчно сваляне" \
-            --body "Автоматичното сваляне от data.egov.bg не мина (вероятно блокиран datacenter IP). Ръчната стъпка отнема 2 минути:
+          MONTH=$(node -p "require('./src/data/statistika/meta.json').month")
+          PROBLEMS=""
 
-          1. Свалете CSV архива от https://data.egov.bg/data/view/2e634036-6ab9-4efd-bd8e-c8e14a931911
-          2. Сложете го като \`data/mvr-raw/ГГГГ-ММ.zip\`
-          3. Пуснете \`npm run stats:build\` и commit-нете промените (или пуснете workflow-а statistika на ръка след push на zip-а)."
+          if [ "${{ steps.download.outcome }}" = "failure" ]; then
+            PROBLEMS="${PROBLEMS}- ${DOWNLOAD_REASON}
+          Ръчната стъпка отнема 2 минути: свалете архива от https://data.egov.bg/data/view/2e634036-6ab9-4efd-bd8e-c8e14a931911, сложете го като \`data/mvr-raw/ГГГГ-ММ.zip\`, пуснете \`npm run stats:build\` и commit-нете (или пуснете workflow-а statistika на ръка след push на zip-а).
+          "
+          fi
+
+          if [ "${{ steps.pr.outputs.opened }}" = "false" ]; then
+            PROBLEMS="${PROBLEMS}- Новите данни са пушнати на клон \`${{ steps.pr.outputs.branch }}\`, но PR не можа да се отвори. Включете Settings → Actions → General → „Allow GitHub Actions to create and approve pull requests“, или отворете PR-а на ръка.
+          "
+          fi
+
+          # Застояли данни. Страницата обещава месечно обновяване, затова
+          # алармата пада на два прага: месец по-стар от миналия е счупено
+          # при всички положения, а след средата на месеца МВР отдавна е
+          # публикувал текущия — липсата му също е проблем.
+          # (последният ден на предния месец, а не `1 month ago` — то бърка
+          # на 29–31 число)
+          LAST_MONTH=$(date -u -d "$(date -u +%Y-%m-01) -1 day" +%Y-%m)
+          THIS_MONTH=$(date -u +%Y-%m)
+          if [ "$MONTH" \< "$LAST_MONTH" ] || { [ "$(date -u +%-d)" -ge 15 ] && [ "$MONTH" \< "$THIS_MONTH" ]; }; then
+            PROBLEMS="${PROBLEMS}- Данните на /statistika са към **${MONTH}**, а вече е $(date -u +%Y-%m) — страницата обещава месечно обновяване, а показва стари числа.
+          "
+          fi
+
+          if [ -z "$PROBLEMS" ]; then
+            echo "Няма проблеми за докладване (данни към ${MONTH})."
+            exit 0
+          fi
+
+          TITLE="Статистика: месечното обновяване не мина"
+          BODY="Пускането от $(date -u +%Y-%m-%d) не успя да обнови /statistika:
+
+          ${PROBLEMS}
+          [Логът на пускането](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+
+          EXISTING=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
+
+          # Червено пускане, а не тихо зелено: иначе списъкът с Actions
+          # изглежда наред, докато страницата стои стара.
+          exit 1

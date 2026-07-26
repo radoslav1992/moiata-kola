@@ -63,12 +63,18 @@ npx wrangler kv namespace create CHECK_CACHE
    и вече реализиран: месечният zip от data.egov.bg стои в `data/mvr-raw/`
    (ГГГГ-ММ.zip), `npm run stats:build` го нормализира до компактни JSON-и
    в `src/data/statistika/`, а страницата `/statistika` се рендерира от тях
-   при build. Суровите CSV-та не влизат в bundle-а. Месечният workflow
-   `.github/workflows/statistika.yml` опитва автоматично сваляне (URL в
-   repo variable `MVR_STATS_URL`) и отваря PR; при блокиран достъп отваря
-   issue за 2-минутната ръчна стъпка. Бележка: файлове 12–21 от архива
-   броят всички издадени СРМПС (вкл. препродажби) — не ги ползваме.
-   Този слой нарочно НЕ влиза в runtime.
+   при build. Суровите CSV-та не влизат в bundle-а. Workflow-ът
+   `.github/workflows/statistika.yml` опитва автоматично сваляне всеки
+   понеделник (URL в repo variable `MVR_STATS_URL`) и отваря PR; при
+   блокиран достъп, отказан PR или застояли данни отваря issue.
+   **За да работи изобщо, са нужни две настройки в репото:** repo
+   variable `MVR_STATS_URL` с прекия линк към zip-а и Settings → Actions
+   → General → „Allow GitHub Actions to create and approve pull
+   requests“. Нормализацията е идемпотентна — `meta.json` носи `dataHash`
+   на числата и ако МВР върне същия архив, месецът не се вдига и PR не се
+   отваря, така че седмичното пускане е безобидно. Бележка: файлове 12–21
+   от архива броят всички издадени СРМПС (вкл. препродажби) — не ги
+   ползваме. Този слой нарочно НЕ влиза в runtime.
 2. **Собствени данни от проверките** — Worker-ът пише по един fire-and-forget
    ред след всяка завършена проверка в Analytics Engine (binding `CHECK_STATS`,
    dataset `check_stats`): вид, изход (valid/invalid/expiring/upstream-error),

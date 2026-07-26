@@ -12,6 +12,7 @@
  * Без външни зависимости; разархивира със системния `unzip`.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
@@ -230,14 +231,35 @@ writeFileSync(
 
 // --------------------------------------------------------------- meta
 
+// Отпечатък на самите числа. МВР публикува един и същ архив на един URL,
+// затова свалянето на 5-о число не значи, че вътре има нов месец. Ако
+// хешът съвпада с предишния, данните са старите — пазим стария `month`
+// (иначе страницата ще обяви юнски числа за юлски) и стария `generatedAt`
+// (иначе всяко пускане прави фалшива промяна в git и излишен PR).
+const dataHash = createHash("sha256")
+  .update(readFileSync(join(OUT_DIR, "fleet.json")))
+  .update(readFileSync(join(OUT_DIR, "age.json")))
+  .update(readFileSync(join(OUT_DIR, "ytd.json")))
+  .digest("hex")
+  .slice(0, 16);
+
+let prev = {};
+try {
+  prev = JSON.parse(readFileSync(join(OUT_DIR, "meta.json"), "utf8"));
+} catch {
+  /* първо пускане */
+}
+const sameData = prev.dataHash === dataHash;
+
 writeFileSync(
   join(OUT_DIR, "meta.json"),
   JSON.stringify(
     {
-      month,
+      month: sameData && prev.month ? prev.month : month,
       sourceUrl: "https://data.egov.bg/data/view/2e634036-6ab9-4efd-bd8e-c8e14a931911",
       sourceName: "МВР — регистрирани ППС (Портал за отворени данни)",
-      generatedAt: new Date().toISOString().slice(0, 10),
+      generatedAt: sameData && prev.generatedAt ? prev.generatedAt : new Date().toISOString().slice(0, 10),
+      dataHash,
     },
     null,
     1,
@@ -245,5 +267,10 @@ writeFileSync(
 );
 
 rmSync(tmp, { recursive: true, force: true });
-console.log(`✓ статистика към ${month}: ${fleetTotals.cars.toLocaleString("bg-BG")} леки автомобила в парка, ` +
-  `${(newVsUsed.novi + newVsUsed.upotrebyavani).toLocaleString("bg-BG")} първоначални регистрации от началото на годината`);
+
+if (sameData) {
+  console.log(`= архивът ${month} съдържа същите данни като ${prev.month} — статистиката остава към ${prev.month}`);
+} else {
+  console.log(`✓ статистика към ${month}: ${fleetTotals.cars.toLocaleString("bg-BG")} леки автомобила в парка, ` +
+    `${(newVsUsed.novi + newVsUsed.upotrebyavani).toLocaleString("bg-BG")} първоначални регистрации от началото на годината`);
+}
