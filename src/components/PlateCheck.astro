@@ -276,6 +276,8 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
       const now = new Date().toLocaleTimeString("bg-BG", { hour: "2-digit", minute: "2-digit" });
       timestampEl.textContent = `Проверено в ${now} ч. · данни от официалните системи`;
       timestampEl.hidden = false;
+      // AdSlot с afterCheck чака това събитие — рекламата идва след резултата, не преди него
+      window.dispatchEvent(new CustomEvent("plate-check-done"));
     });
 
     resultsEl.addEventListener("click", (e) => {

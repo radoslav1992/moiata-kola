@@ -10,6 +10,10 @@
  *                 секции (max-w-5xl) — в max-w-3xl 728px не се побират.
  *   native      — нативен блок; най-много един на страница (фиксиран id).
  *
+ * afterCheck — мястото се показва едва след първата проверка по номер
+ * (събитие "plate-check-done" от PlateCheck): страниците с формата остават
+ * чисти, а рекламата идва под вече показания резултат.
+ *
  * Iframe банерите на Adsterra ползват глобалния `atOptions` и синхронен
  * invoke.js, затова всеки се зарежда в собствен srcdoc iframe — така не си
  * пречат, когато на страницата има повече от един, и се зареждат коректно
@@ -19,16 +23,18 @@ import { ADS_ENABLED } from "@/lib/site";
 
 interface Props {
   format: "rectangle" | "leaderboard" | "native";
+  afterCheck?: boolean;
   class?: string;
 }
 
-const { format, class: className } = Astro.props;
+const { format, afterCheck = false, class: className } = Astro.props;
 ---
 
 {
   ADS_ENABLED && (
     <aside
       data-ad-slot={format}
+      data-ad-after-check={afterCheck ? "" : undefined}
       hidden
       aria-label="Реклама"
       class:list={["flex flex-col items-center gap-1", className]}
@@ -77,9 +83,16 @@ const { format, class: className } = Astro.props;
     return fragment;
   }
 
+  let consented = localStorage.getItem("cookie-consent") === "granted";
+  let checked = false;
+
   function loadAds() {
+    if (!consented) return;
     const wide = window.matchMedia("(min-width: 768px)").matches;
-    document.querySelectorAll<HTMLElement>("[data-ad-slot]:not([data-ad-loaded])").forEach((slot) => {
+    const selector = checked
+      ? "[data-ad-slot]:not([data-ad-loaded])"
+      : "[data-ad-slot]:not([data-ad-loaded]):not([data-ad-after-check])";
+    document.querySelectorAll<HTMLElement>(selector).forEach((slot) => {
       slot.dataset.adLoaded = "";
       const format = slot.dataset.adSlot;
       if (format === "native") slot.append(nativeBlock());
@@ -90,10 +103,14 @@ const { format, class: className } = Astro.props;
   }
 
   if (document.querySelector("[data-ad-slot]")) {
-    if (localStorage.getItem("cookie-consent") === "granted") loadAds();
-    else
-      window.addEventListener("cookie-consent-change", (e) => {
-        if ((e as CustomEvent).detail === "granted") loadAds();
-      });
+    loadAds();
+    window.addEventListener("cookie-consent-change", (e) => {
+      consented = (e as CustomEvent).detail === "granted";
+      loadAds();
+    });
+    window.addEventListener("plate-check-done", () => {
+      checked = true;
+      loadAds();
+    });
   }
 </script>
