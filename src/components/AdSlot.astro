@@ -1,0 +1,99 @@
+---
+/**
+ * Рекламно място (Adsterra). Не рендира нищо, ако ADS_ENABLED е false.
+ * Рекламата се зарежда само при съгласие "granted" от банера за бисквитки
+ * (или веднага щом то бъде дадено) — дотогава мястото е скрито и не заема
+ * пространство.
+ *
+ *   rectangle   — 300×250 на всички екрани (в колоната на статията).
+ *   leaderboard — 728×90 от 768px нагоре, 320×50 под това; само в широки
+ *                 секции (max-w-5xl) — в max-w-3xl 728px не се побират.
+ *   native      — нативен блок; най-много един на страница (фиксиран id).
+ *
+ * Iframe банерите на Adsterra ползват глобалния `atOptions` и синхронен
+ * invoke.js, затова всеки се зарежда в собствен srcdoc iframe — така не си
+ * пречат, когато на страницата има повече от един, и се зареждат коректно
+ * и след късно дадено съгласие.
+ */
+import { ADS_ENABLED } from "@/lib/site";
+
+interface Props {
+  format: "rectangle" | "leaderboard" | "native";
+  class?: string;
+}
+
+const { format, class: className } = Astro.props;
+---
+
+{
+  ADS_ENABLED && (
+    <aside
+      data-ad-slot={format}
+      hidden
+      aria-label="Реклама"
+      class:list={["flex flex-col items-center gap-1", className]}
+    >
+      <span class="text-[11px] tracking-wide text-ink-faint uppercase">Реклама</span>
+    </aside>
+  )
+}
+
+<script>
+  const HOST = "https://bearbraid.com";
+  const BANNERS = {
+    rectangle: { key: "c708ced340a84aba05f3ce1c189628a3", width: 300, height: 250 },
+    leaderboard: { key: "9f60fb9ee0a47681bed26865ab66c57d", width: 728, height: 90 },
+    mobile: { key: "f4482f168d269a7fecd610694bad970f", width: 320, height: 50 },
+  } as const;
+  const NATIVE_KEY = "ec542f98a9ffbc3449b543339df5a1c5";
+
+  function bannerFrame({ key, width, height }: (typeof BANNERS)[keyof typeof BANNERS]) {
+    const options = JSON.stringify({ key, format: "iframe", height, width, params: {} });
+    const frame = document.createElement("iframe");
+    frame.width = String(width);
+    frame.height = String(height);
+    frame.title = "Реклама";
+    frame.loading = "lazy";
+    frame.style.border = "0";
+    frame.style.maxWidth = "100%";
+    frame.setAttribute("scrolling", "no");
+    frame.srcdoc =
+      `<!doctype html><html><head><style>html,body{margin:0;padding:0;overflow:hidden}</style></head><body>` +
+      `<script>atOptions=${options};<\/script>` +
+      `<script src="${HOST}/${key}/invoke.js"><\/script></body></html>`;
+    return frame;
+  }
+
+  function nativeBlock() {
+    const fragment = document.createDocumentFragment();
+    const script = document.createElement("script");
+    script.async = true;
+    script.dataset.cfasync = "false";
+    script.src = `${HOST}/${NATIVE_KEY}/invoke.js`;
+    const container = document.createElement("div");
+    container.id = `container-${NATIVE_KEY}`;
+    container.className = "w-full";
+    fragment.append(script, container);
+    return fragment;
+  }
+
+  function loadAds() {
+    const wide = window.matchMedia("(min-width: 768px)").matches;
+    document.querySelectorAll<HTMLElement>("[data-ad-slot]:not([data-ad-loaded])").forEach((slot) => {
+      slot.dataset.adLoaded = "";
+      const format = slot.dataset.adSlot;
+      if (format === "native") slot.append(nativeBlock());
+      else if (format === "rectangle") slot.append(bannerFrame(BANNERS.rectangle));
+      else slot.append(bannerFrame(wide ? BANNERS.leaderboard : BANNERS.mobile));
+      slot.hidden = false;
+    });
+  }
+
+  if (document.querySelector("[data-ad-slot]")) {
+    if (localStorage.getItem("cookie-consent") === "granted") loadAds();
+    else
+      window.addEventListener("cookie-consent-change", (e) => {
+        if ((e as CustomEvent).detail === "granted") loadAds();
+      });
+  }
+</script>

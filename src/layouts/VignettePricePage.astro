@@ -7,6 +7,7 @@ import Base from "@/layouts/Base.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import PriceTable from "@/components/PriceTable.astro";
 import Faq, { type FaqItem } from "@/components/Faq.astro";
+import AdSlot from "@/components/AdSlot.astro";
 import { priceBySlug, fmtEur, fmtBgn } from "@/data/vignette-prices";
 import { SITE } from "@/lib/site";
 
@@ -73,6 +74,7 @@ const productSchema = {
   </section>
 
   <section class="mx-auto max-w-5xl px-4 pb-10 sm:px-6">
+    <AdSlot format="leaderboard" class="mb-10" />
     <Faq items={faqItems} />
   </section>
 </Base>

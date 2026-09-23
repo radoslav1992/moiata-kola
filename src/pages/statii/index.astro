@@ -1,6 +1,7 @@
 ---
 import Base from "@/layouts/Base.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import AdSlot from "@/components/AdSlot.astro";
 import { getCollection } from "astro:content";
 
 const title = "Статии и ръководства за всяка проверка на колата | По номер";
@@ -50,5 +51,7 @@ const articles = (await getCollection("statii")).sort(
         ))
       }
     </div>
+
+    <AdSlot format="leaderboard" class="py-10" />
   </section>
 </Base>

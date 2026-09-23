@@ -11,12 +11,11 @@ export const SITE = {
 } as const;
 
 /**
- * Превключва се на true заедно с първия рекламен скрипт (AdSense).
- * Банерът за съгласие се показва винаги (заради Google Analytics);
- * рекламният loader трябва да зарежда само при съгласие "granted"
+ * Включва рекламните места (Adsterra) — виж components/AdSlot.astro.
+ * Рекламата се зарежда само при съгласие "granted" от банера за бисквитки
  * (localStorage ключ "cookie-consent") — виж ConsentBanner.astro.
  */
-export const ADS_ENABLED = false;
+export const ADS_ENABLED = true;
 
 export const OFFICIAL_SOURCES = {
   bgtoll: {

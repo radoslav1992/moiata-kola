@@ -2,6 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Faq from "@/components/Faq.astro";
+import AdSlot from "@/components/AdSlot.astro";
 import { getCollection, render } from "astro:content";
 import { SITE } from "@/lib/site";
 
@@ -60,6 +61,8 @@ const related = (await getCollection("statii"))
       <Content />
     </div>
 
+    <AdSlot format="rectangle" class="mt-10" />
+
     <aside class="card mt-10 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
       <div>
         <p class="text-lg font-semibold">Проверете за 10 секунди</p>
@@ -92,4 +95,8 @@ const related = (await getCollection("statii"))
       </section>
     )
   }
+
+  <section class="mx-auto max-w-3xl px-4 pb-12 sm:px-6">
+    <AdSlot format="native" />
+  </section>
 </Base>

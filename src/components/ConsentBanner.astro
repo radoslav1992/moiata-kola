@@ -5,7 +5,7 @@
  * съгласие, затова банерът не зависи от ADS_ENABLED.
  *
  * Изборът се пази в localStorage под ключ "cookie-consent" ("granted"/"denied").
- * Скриптове, които ползват бисквитки (GA, бъдещ AdSense), се изпълняват само
+ * Скриптове, които ползват бисквитки (GA, Adsterra — виж AdSlot.astro), се изпълняват само
  * при "granted":
  *   if (localStorage.getItem("cookie-consent") === "granted") { ...зареди... }
  * и слушат събитието "cookie-consent-change" за късно дадено съгласие.
@@ -21,7 +21,7 @@
 >
   <div class="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <p class="text-sm leading-relaxed text-ink-soft">
-      Ползваме бисквитки за анонимна статистика (Google Analytics), а статиите може да показват реклама.
+      Ползваме бисквитки за анонимна статистика (Google Analytics), а статиите и страниците с цени показват реклама.
       Проверките работят без бисквитки — независимо от избора ви.
       <a href="/poveritelnost" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">Повече за данните</a>.
     </p>
