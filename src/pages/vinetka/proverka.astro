@@ -3,6 +3,7 @@ import Base from "@/layouts/Base.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import PlateCheck from "@/components/PlateCheck.astro";
 import Faq from "@/components/Faq.astro";
+import AdSlot from "@/components/AdSlot.astro";
 import { SITE, OFFICIAL_SOURCES, toolTitle } from "@/lib/site";
 
 const title = toolTitle("Проверка на винетка");
@@ -78,6 +79,7 @@ const appSchema = {
     </div>
     <div class="mx-auto mt-7 max-w-2xl">
       <PlateCheck checks={["vignette"]} buttonLabel="Провери винетката" />
+      <AdSlot format="rectangle" afterCheck class="mt-8" />
     </div>
   </section>
 

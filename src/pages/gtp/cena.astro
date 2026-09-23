@@ -2,6 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Faq from "@/components/Faq.astro";
+import AdSlot from "@/components/AdSlot.astro";
 
 const title = "ГТП цена 2026 — колко струва годишният технически преглед | По номер";
 const description =
@@ -75,6 +76,7 @@ const faqItems = [
   </section>
 
   <section class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+    <AdSlot format="leaderboard" class="mb-10" />
     <Faq items={faqItems} />
   </section>
 </Base>
