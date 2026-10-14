@@ -4,24 +4,29 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import PriceTable from "@/components/PriceTable.astro";
 import VignetteCalculator from "@/components/VignetteCalculator.astro";
 import Faq from "@/components/Faq.astro";
-import { PRICES_UPDATED_HUMAN } from "@/data/vignette-prices";
+import { PRICES_UPDATED_HUMAN, PRICES_EFFECTIVE_HUMAN, priceBySlug, fmtEur, fmtBgn } from "@/data/vignette-prices";
 
-const title = "Цени на винетки 2026 — пълна таблица в евро и лева | По номер";
-const description =
-  "Актуални цени на винетките за 2026 г. в евро и лева: годишна 49,60 € (97 лв.), месечна 15,34 €, седмична 7,67 €, уикенд 5,11 €. Калкулатор кой вид винетка е най-изгоден за вас.";
+const dnevna = priceBySlug("dnevna");
+const uikend = priceBySlug("uikend");
+const sedmichna = priceBySlug("sedmichna");
+const mesechna = priceBySlug("mesechna");
+const godishna = priceBySlug("godishna");
+
+const title = "Цени на винетки 2026 — нови цени от 1 август, в евро и лева | По номер";
+const description = `Новите цени на винетките от ${PRICES_EFFECTIVE_HUMAN}: годишна ${fmtEur(godishna.priceEur)} (${fmtBgn(godishna.priceBgn)}), месечна ${fmtEur(mesechna.priceEur)}, седмична ${fmtEur(sedmichna.priceEur)}, уикенд ${fmtEur(uikend.priceEur)}, еднодневна ${fmtEur(dnevna.priceEur)}. Калкулатор кой вид е най-изгоден.`;
 
 const faqItems = [
   {
     q: "Колко струва годишната винетка за лек автомобил?",
-    a: "Годишната винетка струва 49,60 € (97 лв.) и важи 12 месеца от избраната от вас начална дата — не от 1 януари.",
+    a: `Годишната винетка струва ${fmtEur(godishna.priceEur)} (${fmtBgn(godishna.priceBgn)}) и важи 12 месеца от избраната от вас начална дата — не от 1 януари.`,
   },
   {
-    q: "Промениха ли се цените на винетките след въвеждането на еврото?",
-    a: "Цените са същите по стойност — превалутирани по официалния курс 1,95583 лв. за евро. Годишната от 97 лв. стана 49,60 €, месечната от 30 лв. — 15,34 €, и т.н.",
+    q: "Поскъпнаха ли винетките през 2026 г.?",
+    a: `Да — от ${PRICES_EFFECTIVE_HUMAN} цените за леки автомобили са с около 30% по-високи: годишната стана ${fmtEur(godishna.priceEur)} (беше 49,60 €), месечната — ${fmtEur(mesechna.priceEur)} (беше 15,34 €), седмичната — ${fmtEur(sedmichna.priceEur)} (беше 7,67 €), уикенд — ${fmtEur(uikend.priceEur)} (беше 5,11 €), а еднодневната — ${fmtEur(dnevna.priceEur)} (беше 4,09 €).`,
   },
   {
     q: "Има ли еднодневна винетка за леки автомобили?",
-    a: "Не. Най-краткият вид за леки автомобили е уикенд винетката (5,11 €), валидна от петък 12:00 ч. до неделя 23:59 ч. Дневна винетка съществува само за тежкотоварни автомобили. Подробности на страницата за <a href='/vinetka/ceni/dnevna'>еднодневната винетка</a>.",
+    a: `Да — от 3 февруари 2026 г. Струва ${fmtEur(dnevna.priceEur)} и важи 24 часа от избрания начален час. Подробности на страницата за <a href='/vinetka/ceni/dnevna'>еднодневната винетка</a>.`,
   },
   {
     q: "Откога важи винетката след покупка онлайн?",
@@ -40,7 +45,8 @@ const faqItems = [
   <section class="mx-auto max-w-3xl px-4 pt-6 text-center sm:px-6">
     <h1 class="text-3xl sm:text-4xl">Цени на винетките за 2026 г.</h1>
     <p class="mx-auto mt-3 max-w-2xl text-ink-soft sm:text-lg">
-      Официалните цени за леки автомобили до 3,5 т — в евро и лева, актуални към {PRICES_UPDATED_HUMAN}
+      Официалните цени за леки автомобили до 3,5 т — в евро и лева, по тарифата в сила от
+      {PRICES_EFFECTIVE_HUMAN}. Последна проверка: {PRICES_UPDATED_HUMAN}
     </p>
   </section>
 
@@ -59,7 +65,8 @@ const faqItems = [
         Правилото е просто: сметнете колко уикенд пътувания правите за година. До 9 пътувания —
         по-евтино е да купувате <a href="/vinetka/ceni/uikend">уикенд винетки</a> на парче. Над 9 —
         <a href="/vinetka/ceni/godishna">годишната</a> вече се изплаща. За отпуск до седмица е
-        <a href="/vinetka/ceni/sedmichna">седмичната</a>, за сезонна работа —
+        <a href="/vinetka/ceni/sedmichna">седмичната</a>, за един ден път —
+        <a href="/vinetka/ceni/dnevna">еднодневната</a>, за сезонна работа —
         <a href="/vinetka/ceni/mesechna">месечната или тримесечната</a>.
       </p>
       <p>
