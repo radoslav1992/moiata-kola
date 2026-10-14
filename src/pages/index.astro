@@ -4,11 +4,14 @@ import PlateCheck from "@/components/PlateCheck.astro";
 import PriceTable from "@/components/PriceTable.astro";
 import Faq from "@/components/Faq.astro";
 import { SITE } from "@/lib/site";
+import { priceBySlug, fmtEur, fmtBgn } from "@/data/vignette-prices";
 import { getCollection } from "astro:content";
 
-const title = "Проверка на винетка, ГО и ГТП по номер — наведнъж | По номер";
+const title = "Проверка на МПС по регистрационен номер — винетка, ГО и ГТП | По номер";
 const description =
-  "Безплатна проверка на винетка по регистрационен номер за 10 секунди. Виж валидност и срок на винетката, плюс Гражданска отговорност и ГТП — всичко на един екран, без регистрация.";
+  "Безплатна проверка на кола по регистрационен номер за 10 секунди: валидност и срок на винетката, Гражданската отговорност и ГТП — всичко на един екран, без регистрация.";
+
+const [dnevna, uikend, sedmichna, mesechna, godishna] = ["dnevna", "uikend", "sedmichna", "mesechna", "godishna"].map(priceBySlug);
 
 const faqItems = [
   {
@@ -33,7 +36,7 @@ const faqItems = [
   },
   {
     q: "Колко струва винетката в момента?",
-    a: "Годишната винетка за лек автомобил е 49,60 € (97 лв.), месечната — 15,34 € (30 лв.), седмичната — 7,67 € (15 лв.), а уикенд винетката — 5,11 € (10 лв.). Пълната таблица е на страницата <a href='/vinetka/ceni'>Цени на винетки</a>.",
+    a: `От 1 август 2026 г. годишната винетка за лек автомобил е ${fmtEur(godishna.priceEur)} (${fmtBgn(godishna.priceBgn)}), месечната — ${fmtEur(mesechna.priceEur)}, седмичната — ${fmtEur(sedmichna.priceEur)}, уикенд винетката — ${fmtEur(uikend.priceEur)}, а еднодневната — ${fmtEur(dnevna.priceEur)}. Пълната таблица е на страницата <a href='/vinetka/ceni'>Цени на винетки</a>.`,
   },
 ];
 
@@ -57,17 +60,17 @@ const checks = [
   },
   {
     href: "/grazhdanska-otgovornost/proverka",
-    title: "Гражданска отговорност",
+    title: "Проверка на Гражданска отговорност",
     text: "Има ли колата валидна задължителна застраховка — справка в Гаранционен фонд.",
   },
   {
     href: "/gtp/proverka",
-    title: "ГТП валидност",
+    title: "Проверка на ГТП",
     text: "Кога е минат последният технически преглед и докога важи. Системата на ИААА иска код от картинка — преписвате го направо в резултата.",
   },
   {
     href: "/globi/proverka",
-    title: "Глоби от КАТ",
+    title: "Проверка на глоби от КАТ",
     text: "Стъпка по стъпка: как да видите задълженията си във всички официални системи.",
   },
 ];
@@ -85,7 +88,7 @@ const latestArticles = (await getCollection("statii"))
         Провери колата си за <span class="text-accent">10 секунди</span>
       </h1>
       <p class="mt-3 text-base text-ink-soft sm:text-lg">
-        Винетка, Гражданска отговорност и ГТП — една проверка по регистрационен номер, на едно място.
+        Проверка на МПС по регистрационен номер: винетка, Гражданска отговорност и ГТП — на едно място.
       </p>
     </div>
 

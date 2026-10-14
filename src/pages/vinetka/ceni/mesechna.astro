@@ -2,20 +2,24 @@
 import VignettePricePage from "@/layouts/VignettePricePage.astro";
 import { priceBySlug, fmtEur, fmtBgn } from "@/data/vignette-prices";
 
+const mesechna = priceBySlug("mesechna");
 const trimesechna = priceBySlug("trimesechna");
+const godishna = priceBySlug("godishna");
+const triMesechni = mesechna.priceEur * 3;
+const triSaving = Math.round((1 - trimesechna.priceEur / triMesechni) * 100);
 
 const faqItems = [
   {
     q: "Колко струва месечната винетка?",
-    a: "15,34 € (30 лв.) за лек автомобил. Важи един месец от началната дата, която изберете.",
+    a: `${fmtEur(mesechna.priceEur)} (${fmtBgn(mesechna.priceBgn)}) за лек автомобил. Важи един месец от началната дата, която изберете.`,
   },
   {
     q: "Колко струва тримесечната винетка?",
-    a: "27,61 € (54 лв.) — около 40% по-евтино от три отделни месечни (46,02 €). Ако ви трябват повече от 6 седмици покритие, тримесечната почти винаги е по-изгодна.",
+    a: `${fmtEur(trimesechna.priceEur)} (${fmtBgn(trimesechna.priceBgn)}) — около ${triSaving}% по-евтино от три отделни месечни (${fmtEur(triMesechni)}). Ако ви трябват повече от 6 седмици покритие, тримесечната почти винаги е по-изгодна.`,
   },
   {
     q: "Месечна или годишна — къде е границата?",
-    a: "Три месечни (46,02 €) вече са близо до цената на годишната (49,60 €). Трябва ли ви покритие за повече от 3 месеца в годината — взимайте направо годишна.",
+    a: `Три месечни (${fmtEur(triMesechni)}) вече са близо до цената на годишната (${fmtEur(godishna.priceEur)}). Трябва ли ви покритие за повече от 3 месеца в годината — взимайте направо годишна.`,
   },
   {
     q: "Месец означава ли 30 дни?",
@@ -27,20 +31,26 @@ const faqItems = [
 <VignettePricePage
   priceSlug="mesechna"
   urlSlug="mesechna"
-  title="Месечна винетка — цена 15,34 €, тримесечна — 27,61 € | По номер"
-  description="Месечна винетка за лек автомобил: 15,34 € (30 лв.). Тримесечна: 27,61 € (54 лв.) — кога тримесечната е по-изгодна и къде е границата с годишната."
+  title={`Месечна винетка — цена ${fmtEur(mesechna.priceEur)}, тримесечна — ${fmtEur(trimesechna.priceEur)} | По номер`}
+  description={`Месечна винетка за лек автомобил: ${fmtEur(mesechna.priceEur)} (${fmtBgn(mesechna.priceBgn)}). Тримесечна: ${fmtEur(trimesechna.priceEur)} (${fmtBgn(trimesechna.priceBgn)}) — цени от 1 август 2026 г., кога тримесечната е по-изгодна и къде е границата с годишната.`}
   h1="Месечна и тримесечна винетка — цени"
   {faqItems}
 >
   <p>
-    <strong>Месечната винетка струва 15,34 € (30 лв.)</strong>, а тримесечната —
-    <strong>{fmtEur(trimesechna.priceEur)} ({fmtBgn(trimesechna.priceBgn)})</strong>. Двете покриват
-    една и съща нужда — по-дълъг период на редовно каране — затова ги разглеждаме заедно.
+    <strong>Месечната винетка струва {fmtEur(mesechna.priceEur)} ({fmtBgn(mesechna.priceBgn)})</strong>, а
+    тримесечната — <strong>{fmtEur(trimesechna.priceEur)} ({fmtBgn(trimesechna.priceBgn)})</strong>. Двете
+    покриват една и съща нужда — по-дълъг период на редовно каране — затова ги разглеждаме заедно.
   </p>
   <h2>Сметката, която повечето хора пропускат</h2>
   <ul>
-    <li>3 × месечна = 46,02 € — срещу 27,61 € за тримесечна. <strong>Тримесечната печели с 40%</strong>;</li>
-    <li>2 × тримесечна = 55,22 € — срещу 49,60 € за годишна. <strong>Годишната вече е по-евтина</strong>.</li>
+    <li>
+      3 × месечна = {fmtEur(triMesechni)} — срещу {fmtEur(trimesechna.priceEur)} за тримесечна.
+      <strong>Тримесечната печели с {triSaving}%</strong>;
+    </li>
+    <li>
+      2 × тримесечна = {fmtEur(trimesechna.priceEur * 2)} — срещу {fmtEur(godishna.priceEur)} за годишна.
+      <strong>Годишната вече е по-евтина</strong>.
+    </li>
   </ul>
   <p>
     Правило: до 6 седмици нужда — месечна (или две). Един сезон — тримесечна. Повече — направо
