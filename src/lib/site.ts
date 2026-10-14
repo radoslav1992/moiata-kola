@@ -52,7 +52,12 @@ export const NAV_LINKS = [
   { href: "/statii", label: "Статии" },
 ] as const;
 
-/** „Действие — онлайн за 10 секунди | Бранд“ за инструменти */
-export function toolTitle(action: string): string {
-  return `${action} — онлайн за 10 секунди | ${SITE.name}`;
+/**
+ * Публичният път на страницата от Astro.url.pathname. С build.format "file"
+ * при build пътят идва като "/gtp/proverka.html" (и "/index.html" за началото),
+ * а Cloudflare сервира и индексира "/gtp/proverka" — canonical, og:url и
+ * активният линк в менюто трябва да ползват него.
+ */
+export function cleanPath(pathname: string): string {
+  return pathname.replace(/\.html$/, "").replace(/(^|\/)index$/, "").replace(/\/$/, "") || "/";
 }
