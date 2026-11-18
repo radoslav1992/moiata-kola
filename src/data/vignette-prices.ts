@@ -11,6 +11,17 @@
 export const PRICES_UPDATED = "2026-10-14";
 export const PRICES_UPDATED_HUMAN = "14 октомври 2026 г.";
 export const PRICES_EFFECTIVE_HUMAN = "1 август 2026 г.";
+/** Датата, от която важи тарифата — от нея се изчисляват годината и „1 август“ в заглавията */
+export const PRICES_EFFECTIVE = "2026-08-01";
+const effectiveDate = new Date(`${PRICES_EFFECTIVE}T00:00:00Z`);
+/** "2026" */
+export const PRICES_YEAR = effectiveDate.getUTCFullYear();
+/** "1 август" */
+export const PRICES_EFFECTIVE_SHORT = effectiveDate.toLocaleDateString("bg-BG", {
+  day: "numeric",
+  month: "long",
+  timeZone: "UTC",
+});
 
 export const BGN_PER_EUR = 1.95583;
 
