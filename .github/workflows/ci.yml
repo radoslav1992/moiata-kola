@@ -26,3 +26,6 @@ jobs:
       # Workers Builds при деплой; тук пазим бърз, офлайн-съвместим сигнал.
       - name: Build
         run: npm run build
+
+      - name: SEO and redirect tests
+        run: npm test

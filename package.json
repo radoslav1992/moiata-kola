@@ -10,6 +10,7 @@
     "build:cloudflare": "DEPLOY_TARGET=cloudflare astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "test": "node --test \"tests/*.test.mjs\"",
     "stats:build": "node scripts/statistika/normalize.mjs && node scripts/statistika/og.mjs"
   },
   "dependencies": {

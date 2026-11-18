@@ -35,6 +35,8 @@ export default defineConfig({
   // Cloudflare (html_handling "auto-trailing-slash") тогава сервират
   // каноничния URL без наклонена черта, а /gtp/proverka/ пренасочват към него.
   // С "directory" беше обратното — и в Google влизаха и двата варианта.
+  // Пренасочването на Cloudflare е 307 (временно), затова public/_redirects
+  // прави .html и "/" вариантите 301 (tests/redirects.test.mjs).
   build: { format: "file" },
   integrations: [
     sitemap({
