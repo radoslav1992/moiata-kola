@@ -3,6 +3,7 @@ import { defineConfig, sessionDrivers } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import cloudflare from "@astrojs/cloudflare";
 import node from "@astrojs/node";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 
 // Единственото място, където живее каноничният домейн.
 // При смяна на домейна се променя само тук.
@@ -16,6 +17,32 @@ const isCloudflare =
   process.env.DEPLOY_TARGET === "cloudflare" ||
   process.env.WORKERS_CI === "1" ||
   !!process.env.CF_PAGES;
+
+/**
+ * С trailingSlash "never" @astrojs/sitemap записва началото като
+ * <loc>https://ponomer.com</loc> (премахва "/" след build, serialize не помага).
+ * canonical, og:url и schema на началото са "https://ponomer.com/" — sitemap-ът
+ * трябва да е същият. Пуска се след sitemap интеграцията.
+ */
+function homeSitemapSlash() {
+  return {
+    name: "home-sitemap-slash",
+    hooks: {
+      "astro:build:done": async ({ dir, logger }) => {
+        const files = (await readdir(dir)).filter((f) => /^sitemap-\d+\.xml$/.test(f));
+        for (const f of files) {
+          const file = new URL(f, dir);
+          const xml = await readFile(file, "utf8");
+          const fixed = xml.replaceAll(`<loc>${SITE_URL}</loc>`, `<loc>${SITE_URL}/</loc>`);
+          if (fixed !== xml) {
+            await writeFile(file, fixed);
+            logger.info(`${f}: началната страница е ${SITE_URL}/`);
+          }
+        }
+      },
+    },
+  };
+}
 
 export default defineConfig({
   site: SITE_URL,
@@ -42,5 +69,6 @@ export default defineConfig({
     sitemap({
       filter: (page) => !page.includes("/api/"),
     }),
+    homeSitemapSlash(),
   ],
 });

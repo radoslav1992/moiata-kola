@@ -61,3 +61,13 @@ export const NAV_LINKS = [
 export function cleanPath(pathname: string): string {
   return pathname.replace(/\.html$/, "").replace(/(^|\/)index$/, "").replace(/\/$/, "") || "/";
 }
+
+/**
+ * Абсолютният каноничен URL на път. Една форма за целия сайт: без .html и без
+ * "/" накрая — с изключение на началната страница, която е "https://ponomer.com/"
+ * (коренът винаги има път "/"; така canonical, og:url, sitemap и schema съвпадат).
+ */
+export function canonicalUrl(pathname: string): string {
+  const path = cleanPath(pathname);
+  return path === "/" ? `${SITE.url}/` : `${SITE.url}${path}`;
+}

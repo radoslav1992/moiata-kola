@@ -136,6 +136,7 @@ localStorage `cookie-consent`. Google Analytics (gtag в `Base.astro`) се за
 - Schema: `WebSite` навсякъде, `WebApplication` на инструментите, `Article`+`FAQPage` на статиите,
   `BreadcrumbList` сайтуайд, `Product` на ценовите подстраници
 - `sitemap-index.xml` (автоматичен) + `robots.txt`; канонични URL-и без trailing slash
+  и без `.html`; началото е `https://ponomer.com/` (canonical, og:url, sitemap и schema)
 - Директен отговор в първите две изречения на всяка статия + FAQ блок — GEO-friendly формат
 - Цените са в EUR (основно) и BGN с видим „последна проверка на данните“ timestamp
 
