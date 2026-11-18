@@ -4,7 +4,7 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Faq from "@/components/Faq.astro";
 import AdSlot from "@/components/AdSlot.astro";
 import { getCollection, render } from "astro:content";
-import { SITE } from "@/lib/site";
+import { SITE, canonicalUrl } from "@/lib/site";
 
 export async function getStaticPaths() {
   const articles = await getCollection("statii");
@@ -26,8 +26,8 @@ const articleSchema = {
   inLanguage: "bg",
   datePublished: pubDate.toISOString(),
   dateModified: (updatedDate ?? pubDate).toISOString(),
-  author: { "@type": "Organization", name: SITE.name, url: SITE.url },
-  publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
+  author: { "@type": "Organization", name: SITE.name, url: canonicalUrl("/") },
+  publisher: { "@type": "Organization", name: SITE.name, url: canonicalUrl("/") },
   mainEntityOfPage: `${SITE.url}/statii/${article.id}`,
 };
 
