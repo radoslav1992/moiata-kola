@@ -18,6 +18,7 @@ npm run dev        # http://localhost:4321
 npm run build      # производствен build в dist/
 node dist/server/entry.mjs   # стартиране на Node build-а
 npm run check      # astro check (типове)
+npm test           # SEO и пренасочвания върху dist/ (след build)
 ```
 
 ## Деплой на Cloudflare Workers
@@ -137,6 +138,14 @@ localStorage `cookie-consent`. Google Analytics (gtag в `Base.astro`) се за
 - `sitemap-index.xml` (автоматичен) + `robots.txt`; канонични URL-и без trailing slash
 - Директен отговор в първите две изречения на всяка статия + FAQ блок — GEO-friendly формат
 - Цените са в EUR (основно) и BGN с видим „последна проверка на данните“ timestamp
+
+#### Пренасочвания
+
+`public/_redirects` прави `/път.html`, `/път/` и `/index.html` → 301 към каноничния URL.
+Без него статичните assets на Cloudflare пренасочват със 307 (временно) и Google
+държи старите адреси в индекса. `tests/redirects.test.mjs` проверява всеки стар URL
+от Search Console, че каноничните не се пренасочват и че няма цикли. На живо:
+`npm run build:cloudflare && npx wrangler dev`, после `curl -I localhost:8787/gtp/proverka.html`.
 
 ### Смяна на домейна
 
