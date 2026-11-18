@@ -7,6 +7,8 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join, relative, sep } from "node:path";
+import { priceBySlug, fmtEur, PRICES_YEAR } from "../src/data/vignette-prices.ts";
+import { GTP_PRICE_RANGE_EUR, GTP_PRICE_YEAR } from "../src/data/gtp-prices.ts";
 
 const SITE = "https://ponomer.com";
 const clientDir = fileURLToPath(new URL("../dist/client/", import.meta.url));
@@ -104,5 +106,25 @@ test("вътрешните линкове и абсолютните URL-и со�
       assert.ok(isCanonicalPath(url.pathname), `${p.path}: линк към ${raw}`);
       assert.ok(byPath[url.pathname] || url.pathname.startsWith("/api/"), `${p.path}: линк към несъществуваща страница ${raw}`);
     }
+  }
+});
+
+test("CTR страниците: отговорът е в заглавието, цените са от данните", { skip }, () => {
+  const godishna = fmtEur(priceBySlug("godishna").priceEur);
+  const mesechna = fmtEur(priceBySlug("mesechna").priceEur);
+  const expect = {
+    "/vinetka/ceni/godishna": [godishna, String(PRICES_YEAR)],
+    "/vinetka/ceni": [godishna, mesechna, String(PRICES_YEAR)],
+    "/gtp/cena": [GTP_PRICE_RANGE_EUR, String(GTP_PRICE_YEAR)],
+    "/gtp/proverka": ["Проверка на ГТП по номер"],
+    "/vinetka/proverka": ["Проверка на винетка по номер"],
+  };
+  for (const [path, parts] of Object.entries(expect)) {
+    const { title, description } = byPath[path];
+    const t = decode(title);
+    for (const part of parts) assert.ok(t.includes(part), `${path}: „${part}“ липсва в „${t}“`);
+    assert.ok(t.length <= 60, `${path}: заглавието е ${t.length} знака`);
+    const d = decode(description);
+    assert.ok(d.length >= 110 && d.length <= 160, `${path}: описанието е ${d.length} знака`);
   }
 });

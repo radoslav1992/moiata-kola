@@ -3,15 +3,22 @@ import Base from "@/layouts/Base.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Faq from "@/components/Faq.astro";
 import AdSlot from "@/components/AdSlot.astro";
+import {
+  GTP_PRICE_YEAR,
+  GTP_PRICE_MIN_EUR,
+  GTP_PRICE_MAX_EUR,
+  GTP_PRICE_RANGE_EUR,
+  GTP_PRICE_RANGE_BGN,
+} from "@/data/gtp-prices";
 
-const title = "ГТП цена 2026 в евро — колко струва техническият преглед на кола | По номер";
-const description =
-  "Колко струва годишният технически преглед през 2026 г.: ориентировъчно 30–60 € (60–120 лв.) за лек автомобил според града и пункта — в София е горната част на диапазона. Документи и как да платите по-малко.";
+// Отговорът (цената) е в заглавието; диапазонът идва от data/gtp-prices.ts.
+const title = `ГТП цена ${GTP_PRICE_YEAR}: ${GTP_PRICE_RANGE_EUR} за годишен технически преглед`;
+const description = `ГТП за лек автомобил струва ориентировъчно ${GTP_PRICE_RANGE_EUR} (${GTP_PRICE_RANGE_BGN}) според пункта, в София — към горната граница. Нужни документи и как да платите по-малко.`;
 
 const faqItems = [
   {
     q: "Колко струва ГТП за лек автомобил?",
-    a: "Цената не е фиксирана от държавата — определя я всеки пункт. През 2026 г. за лек автомобил се движи ориентировъчно между 30 € и 60 € (60–120 лв.), като в София и големите градове е по-високата част от диапазона.",
+    a: `Цената не е фиксирана от държавата — определя я всеки пункт. През ${GTP_PRICE_YEAR} г. за лек автомобил се движи ориентировъчно между ${GTP_PRICE_MIN_EUR} € и ${GTP_PRICE_MAX_EUR} € (${GTP_PRICE_RANGE_BGN}), като в София и големите градове е по-високата част от диапазона.`,
   },
   {
     q: "Какви документи трябват за ГТП?",
@@ -41,12 +48,12 @@ const faqItems = [
   />
 
   <section class="mx-auto max-w-3xl px-4 pt-6 sm:px-6">
-    <h1 class="text-center text-3xl sm:text-4xl">Колко струва ГТП през 2026 г.</h1>
+    <h1 class="text-center text-3xl sm:text-4xl">Колко струва годишният технически преглед (ГТП) през {GTP_PRICE_YEAR} г.</h1>
 
     <div class="card mx-auto mt-7 flex max-w-md flex-col items-center gap-1 p-7 text-center">
       <p class="text-sm font-medium text-ink-soft">Лек автомобил — ориентировъчно</p>
-      <p class="font-plate text-5xl font-semibold text-accent sm:text-6xl">30–60&nbsp;€</p>
-      <p class="text-ink-soft">60–120 лв. според града и пункта</p>
+      <p class="font-plate text-5xl font-semibold text-accent sm:text-6xl">{GTP_PRICE_MIN_EUR}–{GTP_PRICE_MAX_EUR}&nbsp;€</p>
+      <p class="text-ink-soft">{GTP_PRICE_RANGE_BGN} според града и пункта</p>
     </div>
 
     <div class="prose-app mt-8">

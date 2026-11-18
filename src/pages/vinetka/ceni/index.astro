@@ -4,7 +4,14 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import PriceTable from "@/components/PriceTable.astro";
 import VignetteCalculator from "@/components/VignetteCalculator.astro";
 import Faq from "@/components/Faq.astro";
-import { PRICES_UPDATED_HUMAN, PRICES_EFFECTIVE_HUMAN, priceBySlug, fmtEur, fmtBgn } from "@/data/vignette-prices";
+import {
+  PRICES_UPDATED_HUMAN,
+  PRICES_EFFECTIVE_HUMAN,
+  PRICES_YEAR,
+  priceBySlug,
+  fmtEur,
+  fmtBgn,
+} from "@/data/vignette-prices";
 
 const dnevna = priceBySlug("dnevna");
 const uikend = priceBySlug("uikend");
@@ -12,8 +19,9 @@ const sedmichna = priceBySlug("sedmichna");
 const mesechna = priceBySlug("mesechna");
 const godishna = priceBySlug("godishna");
 
-const title = "Цени на винетки 2026 — нови цени от 1 август, в евро и лева | По номер";
-const description = `Новите цени на винетките от ${PRICES_EFFECTIVE_HUMAN}: годишна ${fmtEur(godishna.priceEur)} (${fmtBgn(godishna.priceBgn)}), месечна ${fmtEur(mesechna.priceEur)}, седмична ${fmtEur(sedmichna.priceEur)}, уикенд ${fmtEur(uikend.priceEur)}, еднодневна ${fmtEur(dnevna.priceEur)}. Калкулатор кой вид е най-изгоден.`;
+// Отговорът (цената) е в заглавието; цифрите идват от data/vignette-prices.ts.
+const title = `Цени на винетки ${PRICES_YEAR}: годишна ${fmtEur(godishna.priceEur)}, месечна ${fmtEur(mesechna.priceEur)}`;
+const description = `Нови цени от ${PRICES_EFFECTIVE_HUMAN}: годишна ${fmtEur(godishna.priceEur)}, месечна ${fmtEur(mesechna.priceEur)}, седмична ${fmtEur(sedmichna.priceEur)}, уикенд ${fmtEur(uikend.priceEur)}, еднодневна ${fmtEur(dnevna.priceEur)}. Калкулатор за най-изгодния вид.`;
 
 const faqItems = [
   {
@@ -43,7 +51,7 @@ const faqItems = [
   <Breadcrumbs crumbs={[{ href: "/vinetka/ceni", label: "Цени на винетки" }]} />
 
   <section class="mx-auto max-w-3xl px-4 pt-6 text-center sm:px-6">
-    <h1 class="text-3xl sm:text-4xl">Цени на винетките за 2026 г.</h1>
+    <h1 class="text-3xl sm:text-4xl">Цени на винетките за {PRICES_YEAR} г.</h1>
     <p class="mx-auto mt-3 max-w-2xl text-ink-soft sm:text-lg">
       Официалните цени за леки автомобили до 3,5 т — в евро и лева, по тарифата в сила от
       {PRICES_EFFECTIVE_HUMAN}. Последна проверка: {PRICES_UPDATED_HUMAN}

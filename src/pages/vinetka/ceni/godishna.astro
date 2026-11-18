@@ -1,6 +1,13 @@
 ---
 import VignettePricePage from "@/layouts/VignettePricePage.astro";
-import { priceBySlug, fmtEur, fmtBgn } from "@/data/vignette-prices";
+import {
+  priceBySlug,
+  fmtEur,
+  fmtBgn,
+  PRICES_YEAR,
+  PRICES_EFFECTIVE_SHORT,
+  PRICES_EFFECTIVE_HUMAN,
+} from "@/data/vignette-prices";
 
 const godishna = priceBySlug("godishna");
 const uikend = priceBySlug("uikend");
@@ -32,9 +39,9 @@ const faqItems = [
 <VignettePricePage
   priceSlug="godishna"
   urlSlug="godishna"
-  title={`Годишна винетка 2026 — цена ${fmtEur(godishna.priceEur)} и валидност | По номер`}
-  description={`Годишна винетка за лек автомобил: цена ${fmtEur(godishna.priceEur)} (${fmtBgn(godishna.priceBgn)}) от 1 август 2026 г., валидност 12 месеца от избрана дата. Кога се изплаща спрямо уикенд и месечна винетка и как се проверява срокът.`}
-  h1="Годишна винетка — цена и валидност"
+  title={`Годишна винетка ${PRICES_YEAR}: ${fmtEur(godishna.priceEur)} — новата цена от ${PRICES_EFFECTIVE_SHORT}`}
+  description={`Годишна винетка за лек автомобил: ${fmtEur(godishna.priceEur)} (${fmtBgn(godishna.priceBgn)}) от ${PRICES_EFFECTIVE_HUMAN} Важи 12 месеца от избрана от вас дата — проверете по номер до кога е вашата.`}
+  h1={`Годишна винетка ${PRICES_YEAR} — цена и валидност`}
   {faqItems}
 >
   <p>
