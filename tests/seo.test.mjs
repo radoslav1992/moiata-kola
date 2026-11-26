@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { join, relative, sep } from "node:path";
 import { priceBySlug, fmtEur, PRICES_YEAR } from "../src/data/vignette-prices.ts";
 import { GTP_PRICE_RANGE_EUR, GTP_PRICE_YEAR } from "../src/data/gtp-prices.ts";
+import { ON_DEMAND_PAGES } from "./on-demand-pages.mjs";
 
 const SITE = "https://ponomer.com";
 const clientDir = fileURLToPath(new URL("../dist/client/", import.meta.url));
@@ -84,7 +85,9 @@ test("sitemap: точно индексируемите страници, по в
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
   assert.equal(new Set(locs).size, locs.length, "дублирани URL-и в sitemap");
   for (const loc of locs) assert.ok(isCanonicalPath(new URL(loc).pathname), `не-каноничен URL: ${loc}`);
-  assert.deepEqual([...locs].sort(), indexable.map((p) => canonicalFor(p.path)).sort());
+  const expected = [...indexable.map((p) => p.path), ...ON_DEMAND_PAGES].map(canonicalFor);
+  assert.deepEqual([...locs].sort(), expected.sort());
+  assert.ok(!locs.some((loc) => loc.includes("/napomnyane/")), "страниците от писмата не са в sitemap");
   const index = readFileSync(join(clientDir, "sitemap-index.xml"), "utf8");
   assert.ok(index.includes(`<loc>${SITE}/sitemap-0.xml</loc>`));
 });
@@ -104,7 +107,8 @@ test("вътрешните линкове и абсолютните URL-и со�
       if (url.origin !== SITE || raw.startsWith("#") || raw.startsWith("//")) continue;
       if (url.pathname.startsWith("/_astro/") || assetExt.test(url.pathname)) continue;
       assert.ok(isCanonicalPath(url.pathname), `${p.path}: линк към ${raw}`);
-      assert.ok(byPath[url.pathname] || url.pathname.startsWith("/api/"), `${p.path}: линк към несъществуваща страница ${raw}`);
+      const known = byPath[url.pathname] || ON_DEMAND_PAGES.includes(url.pathname) || url.pathname.startsWith("/api/");
+      assert.ok(known, `${p.path}: линк към несъществуваща страница ${raw}`);
     }
   }
 });

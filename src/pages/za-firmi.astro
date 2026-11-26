@@ -1,0 +1,275 @@
+---
+/**
+ * „За фирми и автопаркове“ — страница за интерес към ПЛАНИРАНА услуга.
+ * Нищо платено не е направено: описваме идеята и питаме дали е нужна.
+ *
+ * Рендерира се при заявка (не при build), защото формата зависи от D1 binding-а:
+ * без него се показва само описанието. Формата работи с обикновен POST, без
+ * JavaScript; при грешка страницата се връща с попълнените стойности.
+ */
+import Base from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import { SITE } from "@/lib/site";
+import { runtimeEnv } from "@/lib/runtime-env";
+import {
+  BUDGETS,
+  EMPTY_LEAD,
+  HONEYPOT_FIELD,
+  NEEDS,
+  VEHICLE_RANGES,
+  submitLead,
+  type LeadErrors,
+  type LeadValues,
+} from "@/lib/reminders/leads";
+
+export const prerender = false;
+
+// ≤ 60 знака
+const title = "За фирми и автопаркове — срокове на всички коли | По номер";
+// 120–155 знака
+const description =
+  "Планирана услуга за фирми с няколко автомобила: общ списък с винетка, ГТП и ГО за всяка кола, напомняния и експорт. Още не е налична — нужна ли ви е?";
+
+const db = (await runtimeEnv())?.DB;
+const formEnabled = !!db;
+
+let values: LeadValues = EMPTY_LEAD;
+let errors: LeadErrors = {};
+const sent = Astro.url.searchParams.has("izprateno");
+
+if (Astro.request.method === "POST") {
+  if (!db) return new Response(null, { status: 404 });
+  const outcome = await submitLead(Astro.request, db);
+  if (outcome.status === "saved") return Astro.redirect("/za-firmi?izprateno=1#zapitvane", 303);
+  values = outcome.values;
+  errors = outcome.errors;
+  Astro.response.status = outcome.status === "rejected" ? outcome.code : 400;
+}
+
+const hasErrors = Object.keys(errors).length > 0;
+Astro.response.headers.set(
+  "cache-control",
+  Astro.request.method === "GET" && !sent ? "public, max-age=300" : "no-store",
+);
+
+const features = [
+  {
+    title: "Един списък",
+    text: "Всички регистрационни номера на фирмата с датите, до които важат винетката, техническият преглед и „Гражданска отговорност“ на всяка кола.",
+  },
+  {
+    title: "Напомняния за всички коли",
+    text: "Писмо преди да изтече срок на някой от автомобилите — на един или на няколко адреса във фирмата.",
+  },
+  {
+    title: "Експорт",
+    text: "Таблицата със сроковете като Excel или CSV файл — за счетоводството, за застрахователя или за собствения ви архив.",
+  },
+];
+
+const input =
+  "mt-1.5 w-full rounded-lg border border-line-strong bg-white px-4 py-2.5 text-base text-ink outline-none focus:border-accent";
+const choice = "flex items-start gap-2.5 rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink has-checked:border-accent has-checked:bg-accent-soft";
+const fieldError = "mt-1.5 text-sm text-bad";
+---
+
+<Base {title} {description}>
+  <Breadcrumbs crumbs={[{ href: "/za-firmi", label: "За фирми и автопаркове" }]} />
+
+  <section class="mx-auto max-w-3xl px-4 pt-6 sm:px-6">
+    <p class="inline-flex items-center rounded-full bg-warn-soft px-3 py-1 text-xs font-semibold text-warn">
+      Планирана услуга — още не е налична
+    </p>
+    <h1 class="mt-3 text-3xl sm:text-4xl">За фирми и автопаркове</h1>
+    <div class="prose-app mt-4">
+      <p>
+        Когато колите са повече от една — таксита, куриерски бусове, автомобили под наем, лизингови или
+        товарни — сроковете на винетките, техническите прегледи и „Гражданска отговорност“ се следят
+        трудно на ръка. Обмисляме услуга, която ги събира на едно място.
+      </p>
+      <p>
+        <strong>Тя още не съществува.</strong> Преди да я правим, искаме да разберем дали е нужна, на
+        кого и в какъв вид. Затова тук няма цена и няма дата — има само идеята и няколко въпроса.
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 pt-8 sm:px-6">
+    <h2 class="text-2xl">Какво бихме направили</h2>
+    <div class="mt-5 grid gap-4 sm:grid-cols-3">
+      {
+        features.map((f) => (
+          <div class="card p-5">
+            <h3 class="text-base font-semibold">{f.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-soft">{f.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 pt-8 sm:px-6">
+    <div class="prose-app">
+      <h2>Какво е добре да знаете отсега</h2>
+      <ul>
+        <li>
+          „{SITE.name}“ е неофициален сайт. Данните идват от публичните справки на БГ ТОЛ, Гаранционен фонд
+          и ИААА — услугата не би показвала нищо, което не се вижда и там.
+        </li>
+        <li>
+          Справката за ГТП на ИААА иска код за сигурност и ние не го заобикаляме. За техническия преглед
+          кодът ще се въвежда от човек или датата ще се вписва ръчно.
+        </li>
+        <li>
+          Дотогава <a href="/">проверката по номер</a> работи безплатно за всяка кола поотделно.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 pt-10 sm:px-6" id="zapitvane">
+    {
+      !formEnabled ? (
+        <div class="card p-6 sm:p-8" data-lead-off>
+          <h2 class="text-xl">Интересно ли ви е?</h2>
+          <p class="mt-2 text-ink-soft">
+            Засега не събираме отговори през сайта. Ако такава услуга би ви била полезна, пишете ни на
+            <a
+              href={`mailto:${SITE.email}?subject=${encodeURIComponent("За фирми и автопаркове")}`}
+              class="font-medium text-accent underline decoration-accent/30 underline-offset-2"
+            >{SITE.email}</a> — колко автомобила имате и какво ви трябва най-много.
+          </p>
+        </div>
+      ) : sent ? (
+        <div class="card border-l-4 border-l-ok p-6 sm:p-8" role="status" data-lead-sent>
+          <h2 class="text-xl">Благодарим — записахме отговорите ви</h2>
+          <p class="mt-2 text-ink-soft">
+            Ще ви пишем само ако услугата бъде пусната. Ако размислите, пишете ни на
+            <a href={`mailto:${SITE.email}`} class="font-medium text-accent underline decoration-accent/30 underline-offset-2">{SITE.email}</a>
+            и ще изтрием записа.
+          </p>
+        </div>
+      ) : (
+        <form method="post" action="/za-firmi#zapitvane" class="card p-5 sm:p-8" novalidate data-lead-form>
+          <h2 class="text-xl">Кажете ни дали ви трябва</h2>
+          <p class="mt-2 text-sm text-ink-soft">
+            Няколко въпроса, без задължение. По отговорите ще решим дали да правим услугата.
+          </p>
+
+          {hasErrors && (
+            <div class="mt-4 rounded-lg border border-bad/30 bg-bad-soft px-4 py-3 text-sm text-bad" role="alert">
+              {errors.form ?? "Формата не е изпратена — поправете отбелязаните полета."}
+            </div>
+          )}
+
+          <div class="mt-5">
+            <label for="lead-email" class="text-sm font-semibold text-ink">Имейл</label>
+            <input
+              id="lead-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              inputmode="email"
+              required
+              value={values.email}
+              class={input}
+              aria-invalid={errors.email ? "true" : undefined}
+              aria-describedby={errors.email ? "lead-email-error" : undefined}
+            />
+            {errors.email && <p id="lead-email-error" class={fieldError}>{errors.email}</p>}
+          </div>
+
+          <div class="mt-5">
+            <label for="lead-company" class="text-sm font-semibold text-ink">
+              Фирма <span class="font-normal text-ink-faint">(по желание)</span>
+            </label>
+            <input
+              id="lead-company"
+              name="company"
+              type="text"
+              autocomplete="organization"
+              maxlength="120"
+              value={values.company}
+              class={input}
+              aria-invalid={errors.company ? "true" : undefined}
+              aria-describedby={errors.company ? "lead-company-error" : undefined}
+            />
+            {errors.company && <p id="lead-company-error" class={fieldError}>{errors.company}</p>}
+          </div>
+
+          <fieldset class="mt-6" aria-describedby={errors.vehicles ? "lead-vehicles-error" : undefined}>
+            <legend class="text-sm font-semibold text-ink">Колко автомобила имате?</legend>
+            <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {
+                VEHICLE_RANGES.map((r) => (
+                  <label class={choice}>
+                    <input type="radio" name="vehicles" value={r.value} required checked={values.vehicles === r.value} class="mt-0.5 h-4 w-4 shrink-0 accent-accent" />
+                    <span>{r.label}</span>
+                  </label>
+                ))
+              }
+            </div>
+            {errors.vehicles && <p id="lead-vehicles-error" class={fieldError}>{errors.vehicles}</p>}
+          </fieldset>
+
+          <fieldset class="mt-6" aria-describedby={errors.needs ? "lead-needs-error" : undefined}>
+            <legend class="text-sm font-semibold text-ink">Какво ви трябва?</legend>
+            <div class="mt-2 grid gap-2">
+              {
+                NEEDS.map((n) => (
+                  <label class={choice}>
+                    <input type="checkbox" name="needs" value={n.value} checked={values.needs.includes(n.value)} class="mt-0.5 h-4 w-4 shrink-0 accent-accent" />
+                    <span>{n.label}</span>
+                  </label>
+                ))
+              }
+            </div>
+            {errors.needs && <p id="lead-needs-error" class={fieldError}>{errors.needs}</p>}
+          </fieldset>
+
+          <fieldset class="mt-6" aria-describedby={errors.budget ? "lead-budget-error" : undefined}>
+            <legend class="text-sm font-semibold text-ink">Колко бихте платили на месец за целия автопарк?</legend>
+            <div class="mt-2 grid gap-2 sm:grid-cols-2">
+              {
+                BUDGETS.map((b) => (
+                  <label class={choice}>
+                    <input type="radio" name="budget" value={b.value} required checked={values.budget === b.value} class="mt-0.5 h-4 w-4 shrink-0 accent-accent" />
+                    <span>{b.label}</span>
+                  </label>
+                ))
+              }
+            </div>
+            {errors.budget && <p id="lead-budget-error" class={fieldError}>{errors.budget}</p>}
+          </fieldset>
+
+          {/* Капан за ботове: хората не го виждат и не стигат до него с клавиатурата */}
+          <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+            <label for="lead-website">Оставете това поле празно</label>
+            <input id="lead-website" name={HONEYPOT_FIELD} type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="mt-6">
+            <label class="flex items-start gap-2.5 text-sm text-ink-soft">
+              <input
+                type="checkbox"
+                name="consent"
+                required
+                checked={values.consent}
+                class="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+                aria-describedby={errors.consent ? "lead-consent-error" : undefined}
+              />
+              <span>
+                Съгласен съм {SITE.domain} да пази тези отговори и имейла ми, за да ми пише, ако услугата
+                бъде пусната.
+                <a href="/poveritelnost#za-firmi" class="font-medium text-accent underline decoration-accent/30 underline-offset-2">Как пазим данните</a>
+              </span>
+            </label>
+            {errors.consent && <p id="lead-consent-error" class={fieldError}>{errors.consent}</p>}
+          </div>
+
+          <button type="submit" class="btn-primary mt-6 w-full sm:w-auto">Изпрати</button>
+        </form>
+      )
+    }
+  </section>
+</Base>
