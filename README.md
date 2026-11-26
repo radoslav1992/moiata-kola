@@ -110,15 +110,13 @@ npx wrangler kv namespace create CHECK_CACHE
 
 Настройка — по ред:
 
-1. **Създайте D1 базата** (с данни само в ЕС) и копирайте върнатото `database_id`:
-   ```sh
-   npx wrangler d1 create ponomer --jurisdiction=eu
-   ```
-2. **Впишете я в `wrangler.jsonc`**: разкоментирайте `d1_databases` и сложете реалното `database_id`.
-3. **Приложете миграцията** (`migrations/0001_reminders.sql`):
-   ```sh
-   npx wrangler d1 migrations apply ponomer --remote
-   ```
+1. **D1 базата — готово.** Базата `ponomer` (id `b7da473d-eba9-4654-9efa-d30c095ab49c`) е създадена на
+   26.11.2026 г. с регион Източна Европа (EEUR). Това е предпочитан регион, не юрисдикция „само в ЕС“:
+   ако искате такава гаранция, създайте нова база с `npx wrangler d1 create ponomer-eu --jurisdiction=eu`,
+   приложете миграцията и сменете id-то (юрисдикцията не може да се добави към съществуваща база).
+2. **`wrangler.jsonc` — готово:** `d1_databases` сочи към базата.
+3. **Миграцията — приложена** (`migrations/0001_reminders.sql`, записана в `d1_migrations`, така че
+   `npx wrangler d1 migrations apply ponomer --remote` ще прилага само следващите).
    От тук нататък формата на `/za-firmi` работи (иска само D1).
 4. **Включете Cloudflare Email Sending за ponomer.com**: Dashboard → *Email Service* → *Email Sending* →
    добавете домейна и DNS записите, които Cloudflare предлага (SPF/DKIM), и изчакайте да се

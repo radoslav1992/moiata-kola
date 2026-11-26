@@ -19,14 +19,14 @@
   //   npx wrangler kv namespace create CHECK_CACHE
   // ,"kv_namespaces": [{ "binding": "CHECK_CACHE", "id": "<id от командата>" }]
 
-  // Напомняния по имейл и формата „За фирми“ — изключени, докато блокът е коментиран
-  // (офертата не се показва, /api/reminders отговаря с 404). Стъпките са в README →
-  // „Напомняния по имейл“: създайте базата, приложете миграцията, включете Email
-  // Sending за ponomer.com, после разкоментирайте и сложете реалното database_id.
-  //
-  // ,"d1_databases": [
-  //   { "binding": "DB", "database_name": "ponomer", "database_id": "<id от командата>", "migrations_dir": "migrations" }
-  // ]
+  // Напомняния по имейл и формата „За фирми“. Формата иска само базата (работи).
+  // Напомнянията остават изключени, докато липсва send_email (офертата не се показва,
+  // /api/reminders отговаря с 404). Стъпките са в README → „Напомняния по имейл“.
+  // Базата е създадена на 26.11.2026 г. (регион EEUR), миграция 0001 е приложена.
+  ,"d1_databases": [
+    { "binding": "DB", "database_name": "ponomer", "database_id": "b7da473d-eba9-4654-9efa-d30c095ab49c", "migrations_dir": "migrations" }
+  ]
+  // Остава: включете Email Sending за ponomer.com и разкоментирайте трите реда по-долу.
   // ,"send_email": [{ "name": "EMAIL" }]
   // ,"vars": { "EMAIL_FROM": "no-reply@ponomer.com" }
   // // 07:17–10:17 българско време (зимно). Всяко пускане праща до 12 писма; изпратените не се повтарят.
