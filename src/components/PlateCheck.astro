@@ -75,17 +75,13 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
 <script>
   import { normalizePlate, isValidBgPlate, type CheckResult, type CheckKind } from "@/lib/checks/types";
   import { mountGtp } from "@/lib/checks/gtp-client";
+  import { renewCtaHtml } from "@/lib/checks/renew-cta";
+  import { mountReminderOffer, removeReminderOffer, REMINDERS_HEADER } from "@/lib/reminders/offer-client";
 
   const LABELS: Record<CheckKind, string> = {
     vignette: "Винетка",
     insurance: "Гражданска отговорност",
     inspection: "ГТП (технически преглед)",
-  };
-
-  const INVALID_CTA: Record<CheckKind, { href: string; label: string }> = {
-    vignette: { href: "/vinetka/kupi", label: "Купи винетка онлайн" },
-    insurance: { href: "/grazhdanska-otgovornost/proverka#oferti", label: "Сравни оферти за ГО" },
-    inspection: { href: "/gtp/cena", label: "Виж цените за ГТП" },
   };
 
   const esc = (s: string) =>
@@ -112,7 +108,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
               ${r.detail ? `<span class="text-xs text-ink-faint">${esc(r.detail)}</span>` : ""}
             </div>
             ${r.validTo ? `<p class="mt-2 text-sm text-ink-soft">Валидна до <strong class="text-ink">${fmtDate(r.validTo)}</strong></p>` : ""}
-            ${expiring ? `<a href="${INVALID_CTA[r.kind].href}" class="mt-2 inline-block text-sm font-semibold text-accent hover:underline">${INVALID_CTA[r.kind].label} →</a>` : ""}
+            ${expiring ? renewCtaHtml(r.kind, "link") : ""}
           </div>
           ${
             r.daysLeft !== undefined
@@ -126,12 +122,11 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
     }
 
     if (r.status === "ok" && !r.valid) {
-      const cta = INVALID_CTA[r.kind];
       return `
         <div class="card border-l-4 border-l-bad p-4 sm:p-5" data-card="${r.kind}">
           ${head}
           <div class="mt-1.5">${pill("bg-bad-soft text-bad", "Не е намерена валидна")}</div>
-          <a href="${cta.href}" class="btn-primary mt-3 w-full sm:w-auto">${cta.label}</a>
+          ${renewCtaHtml(r.kind, "button")}
         </div>`;
     }
 
@@ -188,27 +183,44 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
       if (el) el.outerHTML = html;
     };
 
+    /**
+     * Проверката (винетка/ГО) за един вид → картата с резултата на мястото на
+     * скелета. Ако срокът е валиден и напомнянията са включени на сървъра
+     * (заглавие x-reminders), под картата се показва офертата „Напомнете ми“.
+     */
+    async function showStandard(kind: CheckKind, plate: string) {
+      removeReminderOffer(resultsEl, kind);
+      const { html, remindUntil } = await runStandard(kind, plate);
+      setCard(kind, html);
+      const card = resultsEl.querySelector(`[data-card="${kind}"]`);
+      if (card && remindUntil) mountReminderOffer(card, { kind, plate, validTo: remindUntil }, { collapsed: kinds.length > 1 });
+    }
+
     /** Стандартна проверка (винетка/ГО) за един вид — ползва се и при retry. */
-    async function runStandard(kind: CheckKind, plate: string): Promise<string> {
+    async function runStandard(kind: CheckKind, plate: string): Promise<{ html: string; remindUntil?: string }> {
       try {
         const res = await fetch(`/api/check/${kind}?plate=${encodeURIComponent(plate)}`);
         const body = (await res.json()) as CheckResult | { message?: string };
         if (!res.ok) throw new Error((body as { message?: string }).message);
-        return renderResult(body as CheckResult, plate);
+        const result = body as CheckResult;
+        const canRemind = res.headers.get(REMINDERS_HEADER) === "on" && result.status === "ok" && result.valid;
+        return { html: renderResult(result, plate), remindUntil: canRemind ? result.validTo : undefined };
       } catch (err) {
-        return renderResult(
-          {
-            kind,
-            status: "error",
-            message:
-              err instanceof Error && err.message
-                ? err.message
-                : "Проверката е временно недостъпна. Опитайте отново след малко.",
-            officialUrl: "",
-            checkedAt: new Date().toISOString(),
-          },
-          plate,
-        );
+        return {
+          html: renderResult(
+            {
+              kind,
+              status: "error",
+              message:
+                err instanceof Error && err.message
+                  ? err.message
+                  : "Проверката е временно недостъпна. Опитайте отново след малко.",
+              officialUrl: "",
+              checkedAt: new Date().toISOString(),
+            },
+            plate,
+          ),
+        };
       }
     }
 
@@ -216,10 +228,11 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
     function startInspection(plate: string) {
       const el = resultsEl.querySelector(`[data-card="inspection"]`);
       if (!el) return;
+      removeReminderOffer(resultsEl, "inspection");
       const container = document.createElement("div");
       container.dataset.card = "inspection";
       el.replaceWith(container);
-      mountGtp(container, plate, rtaUrl);
+      mountGtp(container, plate, rtaUrl, { collapsedOffer: kinds.length > 1 });
     }
 
     /** Повтаря само една проверка (от бутона „Опитай отново“). */
@@ -230,7 +243,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
         return;
       }
       setCard(kind, skeleton(kind));
-      setCard(kind, await runStandard(kind, lastPlate));
+      await showStandard(kind, lastPlate);
     }
 
     // Предпопълване: ?plate= от URL (споделен линк) или последният проверен номер
@@ -269,7 +282,7 @@ const { checks, buttonLabel = "Провери", id = "plate-check" } = Astro.pro
             startInspection(plate);
             return;
           }
-          setCard(kind, await runStandard(kind, plate));
+          await showStandard(kind, plate);
         }),
       );
 

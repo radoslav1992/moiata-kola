@@ -1,9 +1,11 @@
 // Конфигурация за Cloudflare Workers.
-// Адаптерът на Astro допълва автоматично main (worker entry) и assets binding-а
-// по време на build (DEPLOY_TARGET=cloudflare npm run build).
+// Адаптерът на Astro допълва автоматично assets binding-а по време на build
+// (DEPLOY_TARGET=cloudflare npm run build).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "moiata-kola",
+  // Astro обработва заявките; src/worker.ts добавя само cron handler-а за напомнянията.
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-04-15",
   "compatibility_flags": ["nodejs_compat"],
 
@@ -16,4 +18,17 @@
   // Създайте namespace и разкоментирайте с реалното id:
   //   npx wrangler kv namespace create CHECK_CACHE
   // ,"kv_namespaces": [{ "binding": "CHECK_CACHE", "id": "<id от командата>" }]
+
+  // Напомняния по имейл и формата „За фирми“ — изключени, докато блокът е коментиран
+  // (офертата не се показва, /api/reminders отговаря с 404). Стъпките са в README →
+  // „Напомняния по имейл“: създайте базата, приложете миграцията, включете Email
+  // Sending за ponomer.com, после разкоментирайте и сложете реалното database_id.
+  //
+  // ,"d1_databases": [
+  //   { "binding": "DB", "database_name": "ponomer", "database_id": "<id от командата>", "migrations_dir": "migrations" }
+  // ]
+  // ,"send_email": [{ "name": "EMAIL" }]
+  // ,"vars": { "EMAIL_FROM": "no-reply@ponomer.com" }
+  // // 07:17–10:17 българско време (зимно). Всяко пускане праща до 12 писма; изпратените не се повтарят.
+  // ,"triggers": { "crons": ["17 5-8 * * *"] }
 }
