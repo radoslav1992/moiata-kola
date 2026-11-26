@@ -18,13 +18,14 @@ npm run dev        # http://localhost:4321
 npm run build      # производствен build в dist/
 node dist/server/entry.mjs   # стартиране на Node build-а
 npm run check      # astro check (типове)
-npm test           # SEO и пренасочвания върху dist/ (след build)
+npm test           # тестове: SEO и пренасочвания върху dist/ (след build), напомняния върху локална D1
+npm run check:worker   # маршрутите на worker-а срещу работещ `npx wrangler dev`
 ```
 
 ## Деплой на Cloudflare Workers
 
-Конфигурацията е в `wrangler.jsonc` (адаптерът на Astro я допълва при build с worker
-entry и assets binding). В Cloudflare → Workers → *Create* → свържете GitHub репото и задайте:
+Конфигурацията е в `wrangler.jsonc` (адаптерът на Astro я допълва при build с assets
+binding-а; входната точка е `src/worker.ts` — Astro плюс cron handler-а за напомнянията). В Cloudflare → Workers → *Create* → свържете GitHub репото и задайте:
 
 | Настройка | Стойност |
 |---|---|
@@ -96,6 +97,61 @@ npx wrangler kv namespace create CHECK_CACHE
    - Rate: напр. 20 заявки / 10 секунди → Action: **Block** за 1 минута
    На Free плана имате 1 rate limiting правило — това е правилното място за него.
 
+### Напомняния по имейл и „За фирми“ (изключени, докато не се настроят)
+
+След валиден резултат (винетка, ГТП, ГО) сайтът може да предложи „Напомнете ми по имейл,
+преди да изтече“: имейл + съгласие, писмо с връзка за потвърждение (double opt-in), после
+напомняне 14 и 3 дни преди датата (за кратки винетки — едно, в деня преди). Страницата
+`/za-firmi` събира интерес към планирана услуга за автопаркове.
+
+**Без настройка нищо от това не е активно** и сайтът работи както досега: офертата не се
+показва, `/api/reminders*` и `/napomnyane/*` отговарят с 404, `/za-firmi` показва само
+описанието. Клонът може да се слее преди стъпките по-долу.
+
+Настройка — по ред:
+
+1. **Създайте D1 базата** (с данни само в ЕС) и копирайте върнатото `database_id`:
+   ```sh
+   npx wrangler d1 create ponomer --jurisdiction=eu
+   ```
+2. **Впишете я в `wrangler.jsonc`**: разкоментирайте `d1_databases` и сложете реалното `database_id`.
+3. **Приложете миграцията** (`migrations/0001_reminders.sql`):
+   ```sh
+   npx wrangler d1 migrations apply ponomer --remote
+   ```
+   От тук нататък формата на `/za-firmi` работи (иска само D1).
+4. **Включете Cloudflare Email Sending за ponomer.com**: Dashboard → *Email Service* → *Email Sending* →
+   добавете домейна и DNS записите, които Cloudflare предлага (SPF/DKIM), и изчакайте да се
+   потвърдят. Подателят е `no-reply@ponomer.com`; отговорите отиват на `SITE.email`
+   (`src/lib/site.ts`).
+5. **Разкоментирайте останалото в `wrangler.jsonc`**: `send_email` (binding `EMAIL`), `vars`
+   (`EMAIL_FROM`) и `triggers` (cron).
+6. **Деплой**: `npm run build:cloudflare && npx wrangler deploy` (или push, ако деплоят е през Workers Builds).
+7. **Проверка**: направете проверка на винетка с валиден резултат → под него е офертата → поискайте
+   напомняне на свой адрес → отворете връзката от писмото. `npx wrangler tail` показва ред
+   `[reminders] {...}` при всяко пускане на cron-а.
+
+Какво е добре да знаете:
+
+- **Cron.** `17 5-8 * * *` пуска задачата четири пъти всяка сутрин (UTC). Едно пускане праща до
+  12 писма — толкова се побират в лимита от 50 заявки на извикване в безплатния план на Workers;
+  изпратеното се отбелязва и не се повтаря, останалите тръгват при следващото пускане. На платен
+  план вдигнете лимита с `"REMINDERS_PER_RUN": "200"` във `vars`. Същата задача трие
+  непотвърдените заявки (след 48 часа), напомнянията (30 дни след датата) и старите записи.
+- **Сайтът не проверява регистрите вместо потребителя.** Писмото казва какво е показала
+  неговата проверка и на коя дата, и води към нова проверка. Captcha-та на ИААА не се заобикаля.
+- **Какво се пази** (`migrations/0001_reminders.sql`): имейл, номер, вид, дата на изтичане, ден на
+  проверката, потвърждение и кои писма са пратени. Токените от писмата са само като SHA-256 хеш.
+  IP адреси не се пазят — за ограничението на честотата има HMAC отпечатъци, които се трият.
+  Обещанията към потребителя са в `src/pages/poveritelnost.astro` — при промяна на кода ги дръжте верни.
+- **Защита на формата**: ALTCHA proof-of-work (`src/lib/reminders/crypto.ts`; ключът за подписите се
+  създава сам в таблица `app_secrets`), лимит по IP и по имейл в D1 и лимитът в паметта от
+  `rate-limit.ts`. Добра идея е WAF правилото по-горе да покрива и `/api/reminders`.
+- **Локално**: `npm run build:cloudflare`, после с разкоментирани binding-и
+  `npx wrangler d1 migrations apply ponomer --local && npx wrangler dev`. Писмата не се изпращат —
+  wrangler ги записва във файлове и показва пътя им в конзолата. `npm run check:worker`
+  проверява маршрутите и в двете състояния.
+
 ### Реклама и съгласие
 
 Банерът за съгласие (`ConsentBanner.astro`) се монтира на всяка страница; изборът се пази в
@@ -112,6 +168,10 @@ localStorage `cookie-consent`. Google Analytics (gtag в `Base.astro`) се за
 | `src/data/vignette-prices.ts` | **Единственият източник на истина за цените** — обновява се само тук |
 | `src/lib/checks/` | Адаптери за проверките (винетка / ГО / ГТП) с общ интерфейс `CheckResult` |
 | `src/pages/api/check/[kind].ts` | API маршрут, който клиентският widget вика |
+| `src/lib/reminders/` | Напомняния по имейл: дати и график, D1, писма, ALTCHA, cron, запитвания от фирми |
+| `src/data/renew-links.ts` | Връзката „поднови“ за всеки вид срок — и единственото място за партньорски URL |
+| `src/worker.ts` | Входна точка на Worker-а: Astro + cron handler-ът за напомнянията |
+| `migrations/` | Схемата на D1 базата |
 | `src/components/PlateCheck.astro` | Подписният елемент — входът като регистрационна табела |
 | `src/content/statii/` | Статиите (Markdown + FAQ в frontmatter → FAQPage schema) |
 
@@ -156,5 +216,9 @@ localStorage `cookie-consent`. Google Analytics (gtag в `Base.astro`) се за
 ### Монетизация (когато дойде моментът)
 
 - Партньорските линкове за „купи винетка“ се добавят в `channels` на `src/pages/vinetka/kupi.astro`
-  и в `INVALID_CTA` на `PlateCheck.astro` (с `rel="sponsored"`)
+  (с `rel="sponsored"`)
+- Връзката под изтичащ/липсващ срок и в писмата за напомняне идва от `src/data/renew-links.ts`:
+  попълнете `partnerUrl` и `partnerName` за съответния вид. Тогава връзката става
+  `rel="sponsored"`, а до нея — и в картата с резултата, и в писмото — излиза разкритието
+  „Връзката е партньорска: …“. Празни полета = връзка към страница на сайта, без разкритие
 - Инструменталните страници остават чисти от реклама — скорост и доверие първо
