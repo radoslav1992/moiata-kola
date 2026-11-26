@@ -5,6 +5,7 @@ import { isRateLimited, clientIp } from "@/lib/checks/rate-limit";
 import { daysUntil } from "@/lib/checks/types";
 import { logCheck, type CheckOutcome } from "@/lib/checks/stats";
 import { runtimeEnv } from "@/lib/runtime-env";
+import { sameOrigin } from "@/lib/reminders/api";
 import { remindersEnabled, REMINDERS_HEADER } from "@/lib/reminders/types";
 
 export const prerender = false;
@@ -16,6 +17,8 @@ const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =
   });
 
 export const POST: APIRoute = async ({ request }) => {
+  // Вградената проверка на Astro за произхода е изключена (astro.config.mjs), затова я правим тук.
+  if (!sameOrigin(request)) return json({ error: "forbidden" }, 403);
   if (isRateLimited(clientIp(request))) {
     return json({ error: "rate_limited", message: "Твърде много заявки. Опитайте отново след минута." }, 429);
   }

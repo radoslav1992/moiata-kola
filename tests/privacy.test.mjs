@@ -46,3 +46,11 @@ test("старите обещания „нищо не се пази“ са з�
   }
   assert.match(text("index.html"), /Сайтът не съхранява регистрационни номера, освен ако сами поискате напомняне по имейл\./);
 });
+
+test("every POST endpoint checks the request origin itself (Astro's built-in check is off)", () => {
+  const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+  assert.match(read("astro.config.mjs"), /checkOrigin:\s*false/);
+  assert.match(read("src/pages/api/gtp/check.ts"), /if \(!sameOrigin\(request\)\) return json\(\{ error: "forbidden" \}, 403\)/);
+  assert.match(read("src/lib/reminders/api.ts"), /if \(!sameOrigin\(request\)\) return fail\(403, "forbidden"\)/);
+  assert.match(read("src/lib/reminders/leads.ts"), /if \(!sameOrigin\(request\)\)/);
+});
