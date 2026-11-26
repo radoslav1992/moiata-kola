@@ -27,5 +27,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: SEO and redirect tests
+      # SEO и пренасочвания върху dist/, изключеното състояние върху Node build-а,
+      # напомнянията върху локална D1 (Miniflare).
+      - name: Tests
         run: npm test
