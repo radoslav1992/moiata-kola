@@ -5,6 +5,9 @@
  * самостоятелната страница, за да има едно поведение навсякъде.
  */
 
+import { renewCtaHtml } from "./renew-cta";
+import { mountReminderOffer, REMINDERS_HEADER } from "../reminders/offer-client";
+
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("bg-BG", { day: "numeric", month: "long", year: "numeric" });
@@ -73,7 +76,7 @@ function resultCard(validTo: string, valid: boolean): string {
         ${head}
         <div class="mt-1.5">${pill}</div>
         <p class="mt-2 text-sm text-ink-soft">Валиден до <strong class="text-ink">${fmtDate(validTo)}</strong></p>
-        ${expiring ? `<a href="/gtp/cena" class="mt-2 inline-block text-sm font-semibold text-accent hover:underline">Виж цените за ГТП →</a>` : ""}
+        ${expiring ? renewCtaHtml("inspection", "link") : ""}
       </div>
       <div class="shrink-0 text-center">
         <p class="font-plate text-4xl font-semibold text-${tone} sm:text-5xl">${Math.max(0, days)}</p>
@@ -83,7 +86,12 @@ function resultCard(validTo: string, valid: boolean): string {
 }
 
 /** Стартира ГТП проверката в `container` за вече валидиран номер `plate`. */
-export function mountGtp(container: HTMLElement, plate: string, officialUrl: string): void {
+export function mountGtp(
+  container: HTMLElement,
+  plate: string,
+  officialUrl: string,
+  opts: { collapsedOffer?: boolean } = {},
+): void {
   container.innerHTML = loadingCard();
   void loadCaptcha();
 
@@ -151,6 +159,10 @@ export function mountGtp(container: HTMLElement, plate: string, officialUrl: str
       }
       if (r.status === "ok" && r.validTo) {
         container.innerHTML = resultCard(r.validTo, r.valid);
+        // Валиден преглед и включени напомняния на сървъра → оферта под картата
+        if (r.valid && res.headers.get(REMINDERS_HEADER) === "on") {
+          mountReminderOffer(container, { kind: "inspection", plate, validTo: r.validTo }, { collapsed: opts.collapsedOffer });
+        }
         return;
       }
       if (r.status === "not_found") {

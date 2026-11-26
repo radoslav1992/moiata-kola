@@ -58,6 +58,10 @@ export default defineConfig({
   // Не ползваме сесии → null драйвер, за да не изисква адаптерът SESSION KV namespace
   session: { driver: sessionDrivers.null() },
   trailingSlash: "never",
+  // Формите проверяват произхода сами (sameOrigin в src/lib/reminders/api.ts).
+  // Вградената проверка на Astro би спряла и еднокликовото отписване, което
+  // пощенските услуги пращат като POST без Origin заглавие (RFC 8058).
+  security: { checkOrigin: false },
   // gtp/proverka.html вместо gtp/proverka/index.html: статичните assets на
   // Cloudflare (html_handling "auto-trailing-slash") тогава сервират
   // каноничния URL без наклонена черта, а /gtp/proverka/ пренасочват към него.
@@ -67,7 +71,8 @@ export default defineConfig({
   build: { format: "file" },
   integrations: [
     sitemap({
-      filter: (page) => !page.includes("/api/"),
+      // /napomnyane/* са страници от връзките в писмата (noindex, с токен в адреса)
+      filter: (page) => !page.includes("/api/") && !page.includes("/napomnyane/"),
     }),
     homeSitemapSlash(),
   ],

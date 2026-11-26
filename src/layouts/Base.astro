@@ -19,6 +19,8 @@ interface Props {
   noindex?: boolean;
   /** Път до OG картата на страницата, ако не е общата (напр. "/og-statistika.png") */
   ogImagePath?: string;
+  /** false → без Google Analytics (страниците с токен от писмо в адреса не бива да стигат до GA) */
+  analytics?: boolean;
 }
 
 const {
@@ -30,6 +32,7 @@ const {
   modifiedTime,
   noindex = false,
   ogImagePath = "/og-default.png",
+  analytics = true,
 } = Astro.props;
 
 const canonical = canonicalUrl(Astro.url.pathname);
@@ -75,7 +78,7 @@ const baseSchema = [
     <meta name="theme-color" content="#f7f9fb" />
 
     <!-- Google tag (gtag.js) — зарежда се само при съгласие от банера за бисквитки -->
-    <script is:inline>
+    {analytics && <script is:inline>
       (function () {
         function loadGA() {
           if (window.__gaLoaded) return;
@@ -94,7 +97,7 @@ const baseSchema = [
           if (e.detail === "granted") loadGA();
         });
       })();
-    </script>
+    </script>}
 
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.name} />

@@ -1,0 +1,200 @@
+---
+/**
+ * Страниците зад връзките в писмата за напомняне:
+ *
+ *   /napomnyane/potvarzhdenie?t=…  — потвърждава заявката (double opt-in)
+ *   /napomnyane/otpisvane?t=…      — спира едно напомняне (изтрива го)
+ *   /napomnyane/iztrivane?t=…      — изтрива всичко, записано за имейла
+ *
+ * GET само показва какво ще стане; промяната става с POST. Така автоматичните
+ * скенери на пощите, които отварят връзките предварително, не потвърждават и не
+ * трият нищо. Потвърждението се изпраща само от страницата (един клик от писмото);
+ * отписването иска натискане на бутона или идва като POST от пощенския клиент
+ * (List-Unsubscribe-Post, RFC 8058).
+ *
+ * Без D1/EMAIL binding страниците отговарят с 404.
+ */
+import Base from "@/layouts/Base.astro";
+import NotFound from "@/pages/404.astro";
+import { SITE } from "@/lib/site";
+import { runtimeEnv } from "@/lib/runtime-env";
+import { remindersEnabled, type ReminderRow } from "@/lib/reminders/types";
+import { awaitingConfirmation, confirmReminder, deleteAllForEmail, findByToken, unsubscribe } from "@/lib/reminders/store";
+import { serverSecret } from "@/lib/reminders/crypto";
+import { describePlan, formatBgDate, reminderPlan } from "@/lib/reminders/dates";
+import { KIND_TEXT } from "@/lib/reminders/email";
+
+export const prerender = false;
+
+const ACTIONS = {
+  potvarzhdenie: "Потвърждение на напомняне",
+  otpisvane: "Спиране на напомняне",
+  iztrivane: "Изтриване на данните за имейла",
+} as const;
+type Action = keyof typeof ACTIONS;
+
+const env = await runtimeEnv();
+const action = Astro.params.action as Action;
+const enabled = remindersEnabled(env) && action in ACTIONS;
+
+type View =
+  | { state: "invalid" }
+  | { state: "ask"; row: ReminderRow }
+  | { state: "confirmed"; row: ReminderRow }
+  | { state: "unsubscribed"; row: ReminderRow }
+  | { state: "deleted"; email: string; reminders: number; leads: number };
+
+let view: View = { state: "invalid" };
+
+if (enabled && remindersEnabled(env)) {
+  const db = env.DB;
+  const token = Astro.url.searchParams.get("t");
+  const post = Astro.request.method === "POST";
+
+  if (action === "potvarzhdenie") {
+    if (post) {
+      const done = await confirmReminder(db, token, new Date());
+      if (done) view = { state: "confirmed", row: done.row };
+    } else {
+      const row = await findByToken(db, token, "confirm");
+      if (row?.confirmed_at) view = { state: "confirmed", row };
+      else if (row && awaitingConfirmation(row, new Date())) view = { state: "ask", row };
+    }
+  } else if (action === "otpisvane") {
+    if (post) {
+      const row = await unsubscribe(db, token);
+      if (row) view = { state: "unsubscribed", row };
+    } else {
+      const row = await findByToken(db, token, "manage");
+      if (row) view = { state: "ask", row };
+    }
+  } else {
+    if (post) {
+      const done = await deleteAllForEmail(db, await serverSecret(db), token);
+      if (done) view = { state: "deleted", ...done };
+    } else {
+      const row = await findByToken(db, token, "manage");
+      if (row) view = { state: "ask", row };
+    }
+  }
+}
+
+if (!enabled) Astro.response.status = 404;
+else if (view.state === "invalid") Astro.response.status = 410;
+Astro.response.headers.set("cache-control", "no-store");
+Astro.response.headers.set("referrer-policy", "no-referrer");
+Astro.response.headers.set("x-robots-tag", "noindex");
+
+/** "ivan.petrov@abv.bg" → "i…@abv.bg": страницата може да е отворена от препратено писмо */
+const mask = (email: string) => email.replace(/^(.)[^@]*/, "$1…");
+const what = (row: ReminderRow) => `${KIND_TEXT[row.kind].object} на ${row.plate}`;
+const fact = (row: ReminderRow) =>
+  `${KIND_TEXT[row.kind].subject} на ${row.plate} изтича на ${formatBgDate(row.valid_to)} — според проверката, направена тук на ${formatBgDate(row.checked_on)}`;
+const plan = (row: ReminderRow) => describePlan(reminderPlan(row.valid_to, row.checked_on), row.valid_to);
+
+const title = `${ACTIONS[action] ?? "Напомняне"} | ${SITE.name}`;
+const description = "Страница от връзка в писмо за напомняне от ponomer.com.";
+---
+
+{
+  !enabled ? (
+    <NotFound />
+  ) : (
+    <Base {title} {description} noindex analytics={false}>
+      <section class="mx-auto max-w-xl px-4 py-12 sm:px-6 sm:py-16">
+        <div class="card p-6 sm:p-8" data-reminder-page={action} data-state={view.state}>
+          {view.state === "invalid" && (
+            <>
+              <h1 class="text-2xl">Връзката вече не е валидна</h1>
+              <p class="mt-3 text-ink-soft">
+                Напомнянето, към което води, е изтрито: било е спряно, срокът му е минал или заявката не е
+                била потвърдена до 48 часа. При нас няма какво повече да се прави по него.
+              </p>
+              <p class="mt-3 text-ink-soft">
+                Искате ново напомняне? Направете проверка и го поискайте под резултата.
+              </p>
+              <a href="/" class="btn-primary mt-6">Към проверките</a>
+            </>
+          )}
+
+          {view.state === "ask" && action === "potvarzhdenie" && (
+            <>
+              <h1 class="text-2xl">Потвърдете напомнянето</h1>
+              <p class="mt-3 text-ink-soft">{fact(view.row)}</p>
+              <p class="mt-3 text-ink-soft">{plan(view.row)} на {mask(view.row.email)}.</p>
+              <form method="post" class="mt-6" data-auto-submit>
+                <button type="submit" class="btn-primary w-full sm:w-auto">Потвърди напомнянето</button>
+              </form>
+            </>
+          )}
+
+          {view.state === "ask" && action === "otpisvane" && (
+            <>
+              <h1 class="text-2xl">Спиране на напомнянето</h1>
+              <p class="mt-3 text-ink-soft">
+                Напомнянето за {what(view.row)} (срок {formatBgDate(view.row.valid_to)}) ще бъде изтрито и
+                няма да получите повече писма за него.
+              </p>
+              <form method="post" class="mt-6">
+                <button type="submit" class="btn-primary w-full sm:w-auto">Спри напомнянето</button>
+              </form>
+            </>
+          )}
+
+          {view.state === "ask" && action === "iztrivane" && (
+            <>
+              <h1 class="text-2xl">Изтриване на всичко за този имейл</h1>
+              <p class="mt-3 text-ink-soft">
+                Ще изтрием всички напомняния и всичко останало, записано при нас за {mask(view.row.email)}.
+                Това не може да се върне — за ново напомняне ще трябва нова проверка.
+              </p>
+              <form method="post" class="mt-6">
+                <button type="submit" class="btn-primary w-full sm:w-auto">Изтрий всичко</button>
+              </form>
+            </>
+          )}
+
+          {view.state === "confirmed" && (
+            <>
+              <h1 class="text-2xl">Напомнянето е включено</h1>
+              <p class="mt-3 text-ink-soft">{fact(view.row)}</p>
+              <p class="mt-3 text-ink-soft">{plan(view.row)} на {mask(view.row.email)}.</p>
+              <p class="mt-3 text-sm text-ink-soft">
+                Не проверяваме регистрите вместо вас. Ако подновите по-рано, направете нова проверка и
+                поискайте напомняне отново — датата ще се смени. Връзка за спиране има във всяко писмо.
+              </p>
+              <a href="/" class="btn-secondary mt-6">Към проверките</a>
+            </>
+          )}
+
+          {view.state === "unsubscribed" && (
+            <>
+              <h1 class="text-2xl">Напомнянето е спряно</h1>
+              <p class="mt-3 text-ink-soft">
+                Изтрихме напомнянето за {what(view.row)}. Няма да получите повече писма за него.
+              </p>
+              <a href="/" class="btn-secondary mt-6">Към проверките</a>
+            </>
+          )}
+
+          {view.state === "deleted" && (
+            <>
+              <h1 class="text-2xl">Всичко за този имейл е изтрито</h1>
+              <p class="mt-3 text-ink-soft">
+                Изтрихме {view.reminders === 1 ? "1 напомняне" : `${view.reminders} напомняния`}
+                {view.leads > 0 && " и запитването от страницата за фирми"} за {mask(view.email)}. При нас
+                не остава нищо, свързано с този адрес.
+              </p>
+              <a href="/" class="btn-secondary mt-6">Към проверките</a>
+            </>
+          )}
+        </div>
+      </section>
+      <script is:inline>
+        // Потвърждението тръгва само: един клик от писмото е достатъчен.
+        // Без JavaScript остава бутонът.
+        document.querySelector("form[data-auto-submit]")?.submit();
+      </script>
+    </Base>
+  )
+}

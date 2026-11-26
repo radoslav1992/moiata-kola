@@ -4,13 +4,15 @@ import { submitCheck, type GtpResult } from "@/lib/checks/gtp-relay";
 import { isRateLimited, clientIp } from "@/lib/checks/rate-limit";
 import { daysUntil } from "@/lib/checks/types";
 import { logCheck, type CheckOutcome } from "@/lib/checks/stats";
+import { runtimeEnv } from "@/lib/runtime-env";
+import { remindersEnabled, REMINDERS_HEADER } from "@/lib/reminders/types";
 
 export const prerender = false;
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...extra },
   });
 
 export const POST: APIRoute = async ({ request }) => {
@@ -35,7 +37,9 @@ export const POST: APIRoute = async ({ request }) => {
   const result = await submitCheck(session, plate, captcha);
   const outcome = gtpOutcome(result);
   if (outcome) void logCheck("inspection", outcome);
-  return json(result);
+  // x-reminders: on → клиентът показва офертата за напомняне под валиден резултат
+  const remind = result.status === "ok" && result.valid && remindersEnabled(await runtimeEnv());
+  return json(result, 200, remind ? { [REMINDERS_HEADER]: "on" } : {});
 };
 
 /** captcha_error е грешно преписан код, не завършена проверка — не се брои. */

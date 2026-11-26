@@ -6,6 +6,8 @@ import { checkInspection } from "@/lib/checks/inspection";
 import { cacheGet, cachePut, type KVLike } from "@/lib/checks/cache";
 import { isRateLimited, clientIp } from "@/lib/checks/rate-limit";
 import { logCheck, outcomeOf } from "@/lib/checks/stats";
+import { runtimeEnv } from "@/lib/runtime-env";
+import { remindersEnabled, REMINDERS_HEADER } from "@/lib/reminders/types";
 
 export const prerender = false;
 
@@ -15,14 +17,24 @@ const HANDLERS: Record<CheckKind, (plate: string) => Promise<CheckResult>> = {
   inspection: checkInspection,
 };
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "public, max-age=60",
+      ...extra,
     },
   });
+
+/**
+ * Когато напомнянията по имейл са настроени (D1 + EMAIL binding), отговорът носи
+ * заглавие x-reminders: on и клиентът показва офертата под валиден резултат.
+ * Без binding-и заглавието липсва и отговорът е същият като преди.
+ */
+async function reminderHeaders(): Promise<Record<string, string>> {
+  return remindersEnabled(await runtimeEnv()) ? { [REMINDERS_HEADER]: "on" } : {};
+}
 
 /**
  * Cloudflare KV binding-ът в Astro 6 се чете от модула "cloudflare:workers"
@@ -77,7 +89,7 @@ export const GET: APIRoute = async ({ params, url, request }) => {
   const cached = await cacheGet(kv, cacheKey);
   if (cached) {
     void logCheck(kind, outcomeOf(cached));
-    return json(cached);
+    return json(cached, 200, await reminderHeaders());
   }
 
   const result = await handler(plate);
@@ -85,5 +97,5 @@ export const GET: APIRoute = async ({ params, url, request }) => {
     await cachePut(kv, cacheKey, result);
   }
   void logCheck(kind, outcomeOf(result));
-  return json(result);
+  return json(result, 200, await reminderHeaders());
 };
