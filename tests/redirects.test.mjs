@@ -9,6 +9,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { ON_DEMAND_PAGES } from "./on-demand-pages.mjs";
 
 const root = new URL("../", import.meta.url);
 const client = new URL("dist/client/", root);
@@ -81,6 +82,7 @@ function builtPages() {
 }
 
 const pageExists = (path) =>
+  ON_DEMAND_PAGES.includes(path) ||
   existsSync(fileURLToPath(new URL(path === "/" ? "index.html" : `.${path}.html`, client)));
 
 /** Следва пренасочванията до краен път; хвърля при цикъл */
@@ -143,7 +145,18 @@ test("всеки вариант на всяка страница (.html, /, .htm
 });
 
 test("worker маршрутите (/api/*) не се пренасочват в каноничната си форма", () => {
-  for (const path of ["/api/check/vignette", "/api/gtp/captcha", "/api/gtp/check"]) {
+  const routes = [
+    "/api/check/vignette",
+    "/api/gtp/captcha",
+    "/api/gtp/check",
+    "/api/reminders",
+    "/api/reminders/challenge",
+    "/napomnyane/potvarzhdenie",
+    "/napomnyane/otpisvane",
+    "/napomnyane/iztrivane",
+    ...ON_DEMAND_PAGES,
+  ];
+  for (const path of routes) {
     assert.equal(matchRedirect(rules, path), null, path);
   }
 });
