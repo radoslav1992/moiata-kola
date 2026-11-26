@@ -128,3 +128,21 @@ test("CTR страниците: отговорът е в заглавието, �
     assert.ok(d.length >= 110 && d.length <= 160, `${path}: описанието е ${d.length} знака`);
   }
 });
+
+test("CSS: всеки url() сочи към файл, който build-ът е записал (шрифтове)", { skip }, () => {
+  const astroDir = join(clientDir, "_astro");
+  const cssFiles = readdirSync(astroDir).filter((f) => f.endsWith(".css"));
+  assert.ok(cssFiles.length > 0);
+  let fonts = 0;
+  for (const f of cssFiles) {
+    const css = readFileSync(join(astroDir, f), "utf8");
+    for (const [, raw] of css.matchAll(/url\(([^)]+)\)/g)) {
+      const ref = raw.replace(/^["']|["']$/g, "");
+      if (ref.startsWith("data:") || ref.startsWith("#")) continue;
+      const path = new URL(ref, `${SITE}/_astro/${f}`).pathname;
+      assert.ok(existsSync(join(clientDir, path)), `${f}: ${ref} липсва в build-а`);
+      if (/\.woff2$/.test(path)) fonts++;
+    }
+  }
+  assert.ok(fonts >= 2, "Inter и Oswald се сервират от /_astro/");
+});

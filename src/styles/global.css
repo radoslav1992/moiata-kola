@@ -1,7 +1,7 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
-@import "@fontsource/oswald/500.css";
-@import "@fontsource/oswald/600.css";
+/* Шрифтовете (@fontsource) се импортират в layouts/Base.astro, не тук: при @import
+   в този файл Tailwind вгражда CSS-а им и url(./files/*.woff2) остава относителен
+   към /_astro/, където build-ът не записва файловете (404 за Inter и Oswald). */
 
 @theme {
   /* Платно и повърхности — хладно почти-бяло, бели карти, меки линии */
